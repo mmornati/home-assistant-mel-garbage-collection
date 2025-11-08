@@ -120,14 +120,18 @@ helpers.typing = typing_module
 config_validation_module = _ensure_module("homeassistant.helpers.config_validation")
 
 
-def config_entry_only_config_schema(domain: str):  # pragma: no cover - simple passthrough
+def config_entry_only_config_schema(
+    domain: str,
+):  # pragma: no cover - simple passthrough
     def _schema(_config: Optional[dict] = None):
         return {}
 
     return _schema
 
 
-config_validation_module.config_entry_only_config_schema = config_entry_only_config_schema
+config_validation_module.config_entry_only_config_schema = (
+    config_entry_only_config_schema
+)
 helpers.config_validation = config_validation_module
 
 # ----- homeassistant.components.sensor ------------------------------------
