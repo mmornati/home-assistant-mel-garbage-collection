@@ -1,0 +1,213 @@
+"""Stubs légers pour les modules Home Assistant lors des tests unitaires."""
+
+from __future__ import annotations
+
+import sys
+import types
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Any, Optional
+
+
+def _ensure_module(name: str) -> types.ModuleType:
+    module = sys.modules.get(name)
+    if module is None:
+        module = types.ModuleType(name)
+        sys.modules[name] = module
+    return module
+
+
+# Crée les modules racine
+ha = _ensure_module("homeassistant")
+
+# ----- homeassistant.core -------------------------------------------------
+core = _ensure_module("homeassistant.core")
+
+
+class HomeAssistant:
+    """Stub minimal de HomeAssistant utilisé dans les tests."""
+
+    def __init__(self, loop: Any | None = None) -> None:
+        self.loop = loop
+
+
+core.HomeAssistant = HomeAssistant
+ha.core = core
+
+# ----- homeassistant.config_entries ---------------------------------------
+config_entries = _ensure_module("homeassistant.config_entries")
+
+
+class ConfigEntry:  # pragma: no cover - stub simple
+    """Stub pour ConfigEntry."""
+
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+
+config_entries.ConfigEntry = ConfigEntry
+ha.config_entries = config_entries
+
+# ----- homeassistant.helpers.entity ---------------------------------------
+helpers = _ensure_module("homeassistant.helpers")
+entity_module = _ensure_module("homeassistant.helpers.entity")
+
+
+@dataclass
+class DeviceInfo:
+    identifiers: set[tuple[str, str]]
+    name: Optional[str] = None
+    manufacturer: Optional[str] = None
+    configuration_url: Optional[str] = None
+
+
+class Entity:
+    """Version simplifiée de la classe Entity."""
+
+    _attr_name: Optional[str] = None
+    _attr_unique_id: Optional[str] = None
+    _attr_has_entity_name: bool = False
+    _attr_icon: Optional[str] = None
+
+    @property
+    def name(self) -> Optional[str]:
+        return getattr(self, "_attr_name", None)
+
+    @property
+    def unique_id(self) -> Optional[str]:
+        return getattr(self, "_attr_unique_id", None)
+
+    @property
+    def should_poll(self) -> bool:
+        return False
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return {}
+
+
+entity_module.Entity = Entity
+entity_module.DeviceInfo = DeviceInfo
+helpers.entity = entity_module
+
+# aiohttp_client stub
+aiohttp_client_module = _ensure_module("homeassistant.helpers.aiohttp_client")
+
+
+class DummyClientSession:
+    """Objet factice représentant une session aiohttp."""
+
+
+def async_get_clientsession(hass: HomeAssistant) -> DummyClientSession:
+    return DummyClientSession()
+
+
+aiohttp_client_module.async_get_clientsession = async_get_clientsession
+helpers.aiohttp_client = aiohttp_client_module
+
+# typing stub
+typing_module = _ensure_module("homeassistant.helpers.typing")
+
+
+class ConfigType(dict):  # pragma: no cover - simple alias
+    pass
+
+
+typing_module.ConfigType = ConfigType
+helpers.typing = typing_module
+
+# ----- homeassistant.components.sensor ------------------------------------
+components = _ensure_module("homeassistant.components")
+sensor_module = _ensure_module("homeassistant.components.sensor")
+
+
+class SensorEntity(Entity):
+    """Stub minimal de SensorEntity."""
+
+    @property
+    def native_value(self):
+        return None
+
+
+sensor_module.SensorEntity = SensorEntity
+components.sensor = sensor_module
+ha.components = components
+
+# ----- homeassistant.components.calendar ----------------------------------
+calendar_module = _ensure_module("homeassistant.components.calendar")
+
+
+@dataclass
+class CalendarEvent:
+    summary: str
+    start: datetime
+    end: datetime
+    description: str | None = None
+
+
+class CalendarEntity(Entity):
+    """Stub minimal de CalendarEntity."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    async def async_get_events(self, hass, start, end):
+        return []
+
+    @property
+    def event(self) -> CalendarEvent | None:
+        return None
+
+
+calendar_module.CalendarEntity = CalendarEntity
+calendar_module.CalendarEvent = CalendarEvent
+components.calendar = calendar_module
+
+# ----- homeassistant.helpers.update_coordinator --------------------------
+update_coordinator = _ensure_module("homeassistant.helpers.update_coordinator")
+
+
+class UpdateFailed(Exception):
+    """Exception déclenchée en cas d'échec de mise à jour."""
+
+
+class DataUpdateCoordinator:
+    """Stub très simplifié de DataUpdateCoordinator."""
+
+    def __init__(self, hass, logger, name: str, update_interval=None) -> None:
+        self.hass = hass
+        self.logger = logger
+        self.name = name
+        self.update_interval = update_interval
+
+    async def async_request_refresh(self):
+        return None
+
+
+update_coordinator.UpdateFailed = UpdateFailed
+update_coordinator.DataUpdateCoordinator = DataUpdateCoordinator
+helpers.update_coordinator = update_coordinator
+
+# ----- homeassistant.util.dt ----------------------------------------------
+dt_module = _ensure_module("homeassistant.util.dt")
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def as_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+dt_module.utcnow = utcnow
+dt_module.as_utc = as_utc
+
+ha.helpers = helpers
+ha.util = types.ModuleType("homeassistant.util")
+ha.util.dt = dt_module
+sys.modules["homeassistant.util"] = ha.util
+sys.modules["homeassistant.util.dt"] = dt_module
+

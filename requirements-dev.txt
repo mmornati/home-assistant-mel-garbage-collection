@@ -1,0 +1,7 @@
+pytest
+pytest-asyncio
+ruff
+black
+mypy
+async-timeout
+

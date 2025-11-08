@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Collectes MEL",
+        "description": "Saisissez l'adresse à surveiller.",
+        "data": {
+          "address": "Adresse complète",
+          "latitude": "Latitude (optionnel)",
+          "longitude": "Longitude (optionnel)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Connexion impossible."
+    },
+    "abort": {
+      "already_configured": "Cette adresse est déjà configurée."
+    }
+  }
+}
+
