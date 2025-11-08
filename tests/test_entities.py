@@ -7,7 +7,10 @@ from unittest.mock import patch
 import pytest
 
 from custom_components.mel_collecte.calendar import MelCollecteCalendar
-from custom_components.mel_collecte.sensor import MelCollecteNextSensor, MelCollecteTypeSensor
+from custom_components.mel_collecte.sensor import (
+    MelCollecteNextSensor,
+    MelCollecteTypeSensor,
+)
 
 
 class DummyCoordinator:
@@ -77,7 +80,10 @@ def test_calendar_event_summary():
     calendar = MelCollecteCalendar(coordinator, entry)
     reference_now = datetime(2025, 1, 1, tzinfo=timezone.utc)
 
-    with patch("custom_components.mel_collecte.calendar.dt_util.utcnow", return_value=reference_now):
+    with patch(
+        "custom_components.mel_collecte.calendar.dt_util.utcnow",
+        return_value=reference_now,
+    ):
         event = calendar.event
 
     assert event is not None
@@ -107,7 +113,10 @@ def test_next_sensor_attributes():
     sensor = MelCollecteNextSensor(coordinator, entry)
     reference_now = datetime(2025, 1, 1, tzinfo=timezone.utc)
 
-    with patch("custom_components.mel_collecte.sensor.dt_util.utcnow", return_value=reference_now):
+    with patch(
+        "custom_components.mel_collecte.sensor.dt_util.utcnow",
+        return_value=reference_now,
+    ):
         value = sensor.native_value
         attrs = sensor.extra_state_attributes
 
@@ -121,7 +130,10 @@ def test_type_sensor_name_and_value():
     sensor = MelCollecteTypeSensor(coordinator, entry, "dv")
     reference_now = datetime(2025, 1, 1, tzinfo=timezone.utc)
 
-    with patch("custom_components.mel_collecte.sensor.dt_util.utcnow", return_value=reference_now):
+    with patch(
+        "custom_components.mel_collecte.sensor.dt_util.utcnow",
+        return_value=reference_now,
+    ):
         value = sensor.native_value
 
     assert sensor.name == "Collecte Déchets verts"

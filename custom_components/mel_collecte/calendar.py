@@ -44,7 +44,9 @@ class MelCollecteCalendar(CalendarEntity):
         now = dt_util.utcnow()
         for evt in self._coordinator.data["events"]:
             if evt["start"] >= now:
-                friendly = evt.get("garbage_types_friendly") or evt.get("garbage_types") or []
+                friendly = (
+                    evt.get("garbage_types_friendly") or evt.get("garbage_types") or []
+                )
                 return CalendarEvent(
                     summary=", ".join(friendly) or evt["name"],
                     start=evt["start"],
@@ -53,14 +55,18 @@ class MelCollecteCalendar(CalendarEntity):
                 )
         return None
 
-    async def async_get_events(self, hass: HomeAssistant, start_date: datetime, end_date: datetime) -> List[CalendarEvent]:
+    async def async_get_events(
+        self, hass: HomeAssistant, start_date: datetime, end_date: datetime
+    ) -> List[CalendarEvent]:
         events = []
         start_date = dt_util.as_utc(start_date)
         end_date = dt_util.as_utc(end_date)
         for evt in self._coordinator.data["events"]:
             if evt["end"] < start_date or evt["start"] > end_date:
                 continue
-            friendly = evt.get("garbage_types_friendly") or evt.get("garbage_types") or []
+            friendly = (
+                evt.get("garbage_types_friendly") or evt.get("garbage_types") or []
+            )
             events.append(
                 CalendarEvent(
                     summary=", ".join(friendly) or evt["name"],
@@ -80,4 +86,3 @@ class MelCollecteCalendar(CalendarEntity):
 
     async def async_update(self):
         await self._coordinator.async_request_refresh()
-

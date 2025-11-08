@@ -28,4 +28,3 @@ GARBAGE_TYPES_LABELS = {
 def garbage_label(code: str) -> str:
     """Retourne un libellé humain pour le type de déchet."""
     return GARBAGE_TYPES_LABELS.get(code.lower(), code.upper())
-

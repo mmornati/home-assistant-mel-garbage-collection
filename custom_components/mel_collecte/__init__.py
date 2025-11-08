@@ -10,6 +10,7 @@ from homeassistant.helpers.typing import ConfigType
 try:  # pragma: no cover - fallback pour exécution hors HA (tests)
     from homeassistant.helpers import aiohttp_client
 except ImportError:  # pragma: no cover
+
     class _DummySession:  # type: ignore
         """Session factice pour les tests."""
 
@@ -17,6 +18,7 @@ except ImportError:  # pragma: no cover
         @staticmethod
         def async_get_clientsession(hass: HomeAssistant) -> _DummySession:
             return _DummySession()
+
 
 from .api import MelCollecteAPI
 from .const import DATA_COORDINATOR, DOMAIN
@@ -61,4 +63,3 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
     return unload_ok
-

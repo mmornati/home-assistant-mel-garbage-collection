@@ -80,18 +80,27 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 occurrences.extend(parse_schedule(opening_hours, now, horizon))
 
             friendly_types = [
-                garbage_label(code) for code in collection.get("metas", {}).get("garbage_types", [])
+                garbage_label(code)
+                for code in collection.get("metas", {}).get("garbage_types", [])
             ]
 
             parsed_collections.append(
                 {
                     "id": collection.get("id"),
                     "name": collection.get("name"),
-                    "garbage_types": collection.get("metas", {}).get("garbage_types", []),
+                    "garbage_types": collection.get("metas", {}).get(
+                        "garbage_types", []
+                    ),
                     "garbage_types_friendly": friendly_types,
-                    "collection_mode": collection.get("metas", {}).get("collection_mode"),
-                    "accepted_waste": collection.get("metas", {}).get("accepted_waste", []),
-                    "rejected_waste": collection.get("metas", {}).get("rejected_waste", []),
+                    "collection_mode": collection.get("metas", {}).get(
+                        "collection_mode"
+                    ),
+                    "accepted_waste": collection.get("metas", {}).get(
+                        "accepted_waste", []
+                    ),
+                    "rejected_waste": collection.get("metas", {}).get(
+                        "rejected_waste", []
+                    ),
                     "occurrences": occurrences,
                 }
             )
@@ -99,9 +108,13 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             events.extend(
                 {
                     "collection_id": collection.get("id"),
-                    "garbage_types": collection.get("metas", {}).get("garbage_types", []),
+                    "garbage_types": collection.get("metas", {}).get(
+                        "garbage_types", []
+                    ),
                     "garbage_types_friendly": friendly_types,
-                    "collection_mode": collection.get("metas", {}).get("collection_mode"),
+                    "collection_mode": collection.get("metas", {}).get(
+                        "collection_mode"
+                    ),
                     "start": dt_util.as_utc(occurrence["start"]),
                     "end": dt_util.as_utc(occurrence["end"]),
                     "name": collection.get("name"),
@@ -117,4 +130,3 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "events": events,
             "fetched_at": now.isoformat(),
         }
-

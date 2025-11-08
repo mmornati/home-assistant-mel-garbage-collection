@@ -47,4 +47,3 @@ class MelCollecteOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input: dict | None = None):
         return self.async_abort(reason="not_supported")
-

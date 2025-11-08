@@ -20,7 +20,9 @@ class MelCollecteAPI:
         self._session = session
         self._geocode_cache: dict[str, dict[str, Any]] = {}
 
-    async def geocode_address(self, address: str, citycode: str | None = None) -> dict[str, Any] | None:
+    async def geocode_address(
+        self, address: str, citycode: str | None = None
+    ) -> dict[str, Any] | None:
         """Retourne les détails géolocalisés d'une adresse."""
         cache_key = f"{address.lower()}|{citycode or ''}"
         if cache_key in self._geocode_cache:
@@ -74,4 +76,3 @@ class MelCollecteAPI:
             payload = await response.json()
 
         return [hit["_source"] for hit in payload["hits"]["hits"]]
-

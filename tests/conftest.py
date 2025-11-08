@@ -116,6 +116,20 @@ class ConfigType(dict):  # pragma: no cover - simple alias
 typing_module.ConfigType = ConfigType
 helpers.typing = typing_module
 
+# config_validation stub
+config_validation_module = _ensure_module("homeassistant.helpers.config_validation")
+
+
+def config_entry_only_config_schema(domain: str):  # pragma: no cover - simple passthrough
+    def _schema(_config: Optional[dict] = None):
+        return {}
+
+    return _schema
+
+
+config_validation_module.config_entry_only_config_schema = config_entry_only_config_schema
+helpers.config_validation = config_validation_module
+
 # ----- homeassistant.components.sensor ------------------------------------
 components = _ensure_module("homeassistant.components")
 sensor_module = _ensure_module("homeassistant.components.sensor")
@@ -174,7 +188,9 @@ class UpdateFailed(Exception):
 class DataUpdateCoordinator:
     """Stub très simplifié de DataUpdateCoordinator."""
 
-    def __class_getitem__(cls, _item):  # pragma: no cover - support pour annotations génériques
+    def __class_getitem__(
+        cls, _item
+    ):  # pragma: no cover - support pour annotations génériques
         return cls
 
     def __init__(self, hass, logger, name: str, update_interval=None) -> None:
@@ -242,4 +258,3 @@ class timeout:  # pragma: no cover - simple context manager
 
 async_timeout_module.timeout = timeout
 sys.modules["async_timeout"] = async_timeout_module
-

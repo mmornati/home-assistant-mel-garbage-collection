@@ -14,6 +14,7 @@ help:
 	@echo "  install-dev - Installe les dépendances de dev (pytest, ruff...)"
 	@echo "  test        - Exécute pytest"
 	@echo "  lint        - Lance l'ensemble des lint (ruff + black --check + mypy)"
+	@echo "  format      - Applique black sur le code"
 	@echo "  lint-ruff   - Lint avec ruff"
 	@echo "  lint-black  - Vérifie la formatting via black --check"
 	@echo "  lint-mypy   - Vérifie la statique avec mypy"
@@ -29,6 +30,9 @@ install-dev: install
 
 test: install
 	$(VENV_BIN)/pytest
+
+format: install
+	$(VENV_BIN)/black custom_components tests
 
 lint: install lint-ruff lint-black lint-mypy
 

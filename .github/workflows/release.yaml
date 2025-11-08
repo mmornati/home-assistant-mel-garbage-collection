@@ -70,7 +70,7 @@ jobs:
           VERSION_NO_V="${VERSION#v}"
 
           # Get current version from manifest
-          CURRENT_VERSION=$(grep -o '"version": "[^"]*"' ./custom_components/csnet_home/manifest.json | cut -d'"' -f4)
+          CURRENT_VERSION=$(grep -o '"version": "[^"]*"' ./custom_components/mel_collecte/manifest.json | cut -d'"' -f4)
 
           echo "Current version in manifest: ${CURRENT_VERSION}"
           echo "Requested version: ${VERSION_NO_V}"
@@ -81,14 +81,14 @@ jobs:
           else
             echo "Updating manifest from ${CURRENT_VERSION} to ${VERSION_NO_V}"
             sed -i "s/\"version\": \".*\"/\"version\": \"${VERSION_NO_V}\"/" \
-              ./custom_components/csnet_home/manifest.json
+              ./custom_components/mel_collecte/manifest.json
             echo "needs_update=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Commit Version Update
         if: steps.version_check.outputs.needs_update == 'true'
         run: |
-          git add custom_components/csnet_home/manifest.json
+          git add custom_components/mel_collecte/manifest.json
           git commit -m "Updating to version ${{ inputs.version }}"
           git push origin main
 
@@ -178,7 +178,7 @@ jobs:
       - name: Verify Manifest Version
         run: |
           MANIFEST_VERSION=$(grep -o '"version": "[^"]*"' \
-            ./custom_components/csnet_home/manifest.json | cut -d'"' -f4)
+            ./custom_components/mel_collecte/manifest.json | cut -d'"' -f4)
 
           if [ "${{ github.event_name }}" = "release" ]; then
             TAG_VERSION="${{ github.event.release.tag_name }}"
@@ -197,11 +197,11 @@ jobs:
 
       - name: Create Zip Archive
         run: |
-          cd custom_components/csnet_home
+          cd custom_components/mel_collecte
           # Remove any existing zip
-          rm -f hass-custom-csnet-home.zip
+          rm -f mel_collecte.zip
           # Create zip with all files except git, cache, and python bytecode
-          zip -r hass-custom-csnet-home.zip . \
+          zip -r mel_collecte.zip . \
             -x "*.git*" \
             -x "*__pycache__*" \
             -x "*.pyc" \
@@ -209,17 +209,17 @@ jobs:
             -x "*.DS_Store" \
             -x "*.pytest_cache*"
           # Verify zip was created
-          if [ ! -f "hass-custom-csnet-home.zip" ]; then
+          if [ ! -f "mel_collecte.zip" ]; then
             echo "ERROR: Failed to create zip file"
             exit 1
           fi
-          echo "✅ Zip created successfully: $(ls -lh hass-custom-csnet-home.zip)"
-          zipinfo hass-custom-csnet-home.zip | head -20
+          echo "✅ Zip created successfully: $(ls -lh mel_collecte.zip)"
+          zipinfo mel_collecte.zip | head -20
 
       - name: Upload Zip to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ./custom_components/csnet_home/hass-custom-csnet-home.zip
+          files: ./custom_components/mel_collecte/mel_collecte.zip
           tag_name: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.version }}
           fail_on_unmatched_files: true
         env:
@@ -229,11 +229,11 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: >-
-            hass-custom-csnet-home-${{
+            mel_collecte-${{
               github.event_name == 'release' &&
               github.event.release.tag_name || inputs.version
             }}
-          path: ./custom_components/csnet_home/hass-custom-csnet-home.zip
+          path: ./custom_components/mel_collecte/mel_collecte.zip
           if-no-files-found: error
           retention-days: 90
           compression-level: 0
