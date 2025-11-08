@@ -1,16 +1,11 @@
 {
   "name": "MEL Collecte",
   "content_in_root": false,
-  "domain": "mel_collecte",
   "render_readme": true,
   "country": [
     "FR"
   ],
   "homeassistant": "2024.6.0",
-  "iot_class": [
-    "cloud_polling"
-  ],
   "zip_release": true,
   "filename": "mel_collecte.zip"
 }
-
