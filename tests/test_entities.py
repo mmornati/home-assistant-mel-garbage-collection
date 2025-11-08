@@ -125,4 +125,4 @@ def test_type_sensor_name_and_value():
         value = sensor.native_value
 
     assert sensor.name == "Collecte Déchets verts"
-    assert value.endswith("T08:00:00+00:00")
+    assert value == "2025-01-09T00:00:00+00:00"

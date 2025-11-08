@@ -1,0 +1,104 @@
+name: Validate
+
+'on':
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    name: Validate with Hassfest
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v5"
+
+      - name: Run Hassfest
+        uses: home-assistant/actions/hassfest@master
+
+  hacs_validation:
+    name: HACS Validation
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: HACS validation
+        uses: hacs/action@main
+        with:
+          ignore: brands
+          category: integration
+
+  style:
+    name: Lint & Type Check
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v5"
+
+      - name: Setup Python
+        uses: "actions/setup-python@v6"
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements-dev.txt
+
+      - name: Run project lint target
+        run: make lint
+
+  security:
+    name: Security Scan
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v5"
+
+      - name: Setup Python
+        uses: "actions/setup-python@v6"
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install bandit safety
+          python3 -m pip install -r requirements-dev.txt
+
+      - name: Run Bandit security scan
+        run: bandit -r custom_components/mel_collecte
+        continue-on-error: true
+
+      - name: Check dependencies for vulnerabilities
+        run: safety check --json || true
+        continue-on-error: true
+
+  tests:
+    name: Run Unit Tests
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v5"
+
+      - name: Setup Python
+        uses: "actions/setup-python@v6"
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements-dev.txt
+
+      - name: Run pytest
+        run: pytest

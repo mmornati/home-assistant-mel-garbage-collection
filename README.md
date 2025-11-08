@@ -51,6 +51,12 @@ Chaque entité expose des attributs (`mode`, `types`, `collection_id`, etc.) pou
 
 ---
 
+### Documentation utilisateur
+
+Une notice complète (installation, configuration, intégration avec la carte [Trash Card](https://github.com/idaho/hassio-trash-card) et patterns des libellés) est disponible dans `docs/guide_utilisateur.md`.
+
+---
+
 ### Personnalisation / pistes d’évolution
 
 - Mapper les codes `garbage_types` vers des libellés en clair ou des icônes personnalisées.

@@ -174,6 +174,9 @@ class UpdateFailed(Exception):
 class DataUpdateCoordinator:
     """Stub très simplifié de DataUpdateCoordinator."""
 
+    def __class_getitem__(cls, _item):  # pragma: no cover - support pour annotations génériques
+        return cls
+
     def __init__(self, hass, logger, name: str, update_interval=None) -> None:
         self.hass = hass
         self.logger = logger
@@ -210,4 +213,33 @@ ha.util = types.ModuleType("homeassistant.util")
 ha.util.dt = dt_module
 sys.modules["homeassistant.util"] = ha.util
 sys.modules["homeassistant.util.dt"] = dt_module
+
+# ----- aiohttp stub -------------------------------------------------------
+aiohttp_module = types.ModuleType("aiohttp")
+
+
+class ClientSession:  # pragma: no cover - simple stub
+    """ClientSession factice pour éviter d'installer aiohttp."""
+
+
+aiohttp_module.ClientSession = ClientSession
+sys.modules["aiohttp"] = aiohttp_module
+
+# ----- async_timeout stub -------------------------------------------------
+async_timeout_module = types.ModuleType("async_timeout")
+
+
+class timeout:  # pragma: no cover - simple context manager
+    def __init__(self, *_args, **_kwargs):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+
+async_timeout_module.timeout = timeout
+sys.modules["async_timeout"] = async_timeout_module
 
