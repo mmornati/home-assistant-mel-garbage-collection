@@ -1,0 +1,12 @@
+{
+  "name": "MEL Collecte",
+  "domains": [
+    "mel_collecte"
+  ],
+  "render_readme": true,
+  "country": [
+    "FR"
+  ],
+  "homeassistant": "2024.6.0"
+}
+

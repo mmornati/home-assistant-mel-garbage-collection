@@ -1,11 +1,13 @@
 {
   "domain": "mel_collecte",
   "name": "MEL Collecte des déchets",
+  "codeowners": [
+    "@mmornati"
+  ],
   "config_flow": true,
   "documentation": "https://github.com/mmornati/home-assistant-mel-garbage-collection",
-  "requirements": [],
-  "codeowners": ["@your-github"],
   "iot_class": "cloud_polling",
+  "requirements": [],
   "version": "0.1.0"
 }
 
