@@ -1,5 +1,6 @@
 {
   "name": "MEL Collecte",
+  "content_in_root": false,
   "domain": "mel_collecte",
   "render_readme": true,
   "country": [

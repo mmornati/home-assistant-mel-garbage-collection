@@ -10,7 +10,7 @@ from homeassistant.core import callback
 from .const import DEFAULT_INSTANCE_ID, DOMAIN
 
 
-class MelCollecteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class MelCollecteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Gestion du formulaire de configuration."""
 
     VERSION = 1
