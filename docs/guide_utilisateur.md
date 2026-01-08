@@ -48,6 +48,11 @@ Cette documentation explique comment installer et configurer le composant person
   - `mode` (ramassage, dépôt, RDV…),
   - `debut` / `fin`.
 - `sensor.collecte_<type>` : un capteur par type détecté (`sensor.collecte_dechets_verts`, etc.).
+- `sensor.alertes_collecte` : nombre d'alertes actives du service de collecte, avec attributs :
+  - `alerts` : liste complète des alertes avec détails (id, nom, type, message, dates),
+  - `last_alert_name` : titre de la dernière alerte,
+  - `last_alert_type` : type de la dernière alerte (`danger`, `warning`, `info`),
+  - `last_alert_message` : contenu HTML de la dernière alerte.
 
 Tous les capteurs sont mis à jour automatiquement une fois par semaine + au démarrage.
 
@@ -105,6 +110,33 @@ pattern:
 ```
 
 > **Important** : `pattern` (champ de détection) doit correspondre exactement au libellé d’évènement du calendrier. Les capteurs fournissent la liste complète via l’attribut `types_friendly`; vous pouvez la consulter dans `Outils de développement → États`.
+
+---
+
+### 5.3 Carte des alertes
+
+Pour afficher les alertes du service de collecte, utilisez une carte Markdown :
+
+```yaml
+type: markdown
+title: 🚨 Alertes collecte
+content: |
+  {% set alerts = state_attr('sensor.alertes_collecte', 'alerts') %}
+  {% if alerts and alerts | length > 0 %}
+    {% for alert in alerts %}
+  ### {{ alert.type_friendly }} – {{ alert.name }}
+  {{ alert.message | regex_replace('<[^>]+>', '') | truncate(200) }}
+  
+  *Publié le {{ alert.published_at[:10] }}*
+  
+  ---
+    {% endfor %}
+  {% else %}
+  Aucune alerte en cours.
+  {% endif %}
+```
+
+Cette carte affiche toutes les alertes actives avec leur type (⚠️ Alerte, ℹ️ Information), titre, et message.
 
 ---
 

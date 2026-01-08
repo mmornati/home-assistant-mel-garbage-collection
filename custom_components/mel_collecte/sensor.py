@@ -18,6 +18,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     entities: list[SensorEntity] = [
         MelCollecteNextSensor(coordinator, entry),
+        MelCollecteAlertSensor(coordinator, entry),
     ]
 
     seen_types: set[str] = set()
@@ -127,3 +128,45 @@ class MelCollecteTypeSensor(MelCollecteBaseSensor):
             if event["start"] >= now and self._type in event["garbage_types"]:
                 return event
         return None
+
+
+class MelCollecteAlertSensor(MelCollecteBaseSensor):
+    """Capteur pour les alertes du service de collecte."""
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.entry_id}_alerts"
+        self._attr_name = "Alertes collecte"
+        self._attr_icon = "mdi:alert-circle"
+
+    @property
+    def native_value(self):
+        """Retourne le nombre d'alertes actives."""
+        alerts = self._coordinator.data.get("alerts", [])
+        return len(alerts)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Retourne les détails des alertes."""
+        alerts = self._coordinator.data.get("alerts", [])
+        if not alerts:
+            return {"alerts": []}
+
+        return {
+            "alerts": [
+                {
+                    "id": alert.get("id"),
+                    "name": alert.get("name"),
+                    "type": alert.get("alert_type"),
+                    "type_friendly": alert.get("alert_type_friendly"),
+                    "message": alert.get("blurb"),
+                    "published_at": alert.get("published_at"),
+                    "end_at": alert.get("end_at"),
+                }
+                for alert in alerts
+            ],
+            "last_alert_name": alerts[0].get("name") if alerts else None,
+            "last_alert_type": alerts[0].get("alert_type") if alerts else None,
+            "last_alert_message": alerts[0].get("blurb") if alerts else None,
+        }
+

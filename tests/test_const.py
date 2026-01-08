@@ -33,6 +33,9 @@ class DummyAPI:
             }
         ]
 
+    async def fetch_alerts(self, **kwargs):
+        return []
+
 
 @pytest.mark.asyncio
 async def test_coordinator_builds_events(monkeypatch):
