@@ -26,6 +26,16 @@ L’objectif est de pouvoir déclencher des automatisations (notifications, Tras
    - `metas.accepted_waste` / `rejected_waste` ;
    - `collection_mode` : ramassage devant la maison, dépôt, prise de RDV, etc.
 
+3. **Alertes** – récupérer les alertes et messages du service de collecte.
+   ```bash
+   curl 'https://api.publidata.io/v2/search?types[]=Alert&states[]=visible&include[]=*model_name&instances[]=876&order[desc]=published_at&address_id=<ID_ADRESSE>&size=5'
+   ```
+   La réponse contient :
+   - `name`: titre de l'alerte ;
+   - `alert_type`: type (`danger`, `warning`, `info`) ;
+   - `blurb`: contenu HTML du message ;
+   - `start_at` / `end_at`: période de validité.
+
 ---
 
 ### Installation du composant
@@ -36,7 +46,7 @@ L’objectif est de pouvoir déclencher des automatisations (notifications, Tras
 
 3. L’intégration interroge l’API Publidata :
    - Géocodage de l’adresse (une fois) ;
-   - récupération des collectes (au démarrage puis chaque semaine) ;
+   - récupération des collectes et des alertes (au démarrage puis chaque semaine) ;
    - génération d’évènements jusqu’à 90 jours à partir des horaires fournis.
 
 ---
@@ -45,7 +55,8 @@ L’objectif est de pouvoir déclencher des automatisations (notifications, Tras
 
 - `calendar.mel_collectes` : calendrier contenant l’ensemble des collectes ;
 - `sensor.prochaine_collecte` : date/heure ISO de la prochaine collecte ;
-- `sensor.collecte_<type>` : une entité par type (`omr`, `dv`, …) avec date de la prochaine collecte correspondante.
+- `sensor.collecte_<type>` : une entité par type (`omr`, `dv`, …) avec date de la prochaine collecte correspondante ;
+- `sensor.alertes_collecte` : nombre d'alertes actives du service, avec détails dans les attributs.
 
 Chaque entité expose des attributs (`mode`, `types`, `collection_id`, etc.) pour faciliter les automatisations/notifications.
 

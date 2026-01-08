@@ -24,7 +24,19 @@ GARBAGE_TYPES_LABELS = {
     "emb": "Emballages recyclables",
 }
 
+ALERT_TYPE_LABELS = {
+    "danger": "⚠️ Alerte",
+    "warning": "⚡ Avertissement",
+    "info": "ℹ️ Information",
+}
+
 
 def garbage_label(code: str) -> str:
     """Retourne un libellé humain pour le type de déchet."""
     return GARBAGE_TYPES_LABELS.get(code.lower(), code.upper())
+
+
+def alert_label(alert_type: str) -> str:
+    """Retourne un libellé humain pour le type d'alerte."""
+    return ALERT_TYPE_LABELS.get(alert_type.lower(), alert_type.capitalize())
+

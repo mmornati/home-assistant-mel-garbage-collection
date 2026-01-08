@@ -11,7 +11,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .api import MelCollecteAPI
-from .const import LOOKAHEAD_DAYS, UPDATE_INTERVAL_DAYS, garbage_label
+from .const import LOOKAHEAD_DAYS, UPDATE_INTERVAL_DAYS, alert_label, garbage_label
 from .parser import parse_schedule
 
 LOGGER = logging.getLogger(__name__)
@@ -60,6 +60,12 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 address_id=address_id,
                 lat=fetched_lat,
                 lon=fetched_lon,
+            )
+
+            # Fetch alerts from the service
+            alerts = await self.api.fetch_alerts(
+                instance_id=self.instance_id,
+                address_id=address_id,
             )
         except Exception as err:
             LOGGER.error("Erreur lors de la récupération des collectes: %s", err)
@@ -124,9 +130,25 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         events.sort(key=lambda item: item["start"])
 
+        # Parse alerts
+        parsed_alerts = [
+            {
+                "id": alert.get("id"),
+                "name": alert.get("name"),
+                "alert_type": alert.get("alert_type"),
+                "alert_type_friendly": alert_label(alert.get("alert_type", "")),
+                "blurb": alert.get("blurb"),
+                "start_at": alert.get("start_at"),
+                "end_at": alert.get("end_at"),
+                "published_at": alert.get("published_at"),
+            }
+            for alert in alerts
+        ]
+
         return {
             "address": self._address_payload,
             "collections": parsed_collections,
             "events": events,
+            "alerts": parsed_alerts,
             "fetched_at": now.isoformat(),
         }

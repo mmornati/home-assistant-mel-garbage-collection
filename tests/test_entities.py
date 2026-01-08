@@ -138,3 +138,73 @@ def test_type_sensor_name_and_value():
 
     assert sensor.name == "Collecte Déchets verts"
     assert value == "2025-01-09T00:00:00+00:00"
+
+
+def test_alert_sensor_count_and_attributes():
+    """Test du capteur d'alertes."""
+    from custom_components.mel_collecte.sensor import MelCollecteAlertSensor
+
+    sample_alerts = [
+        {
+            "id": 5534,
+            "name": "Conditions météorologiques",
+            "alert_type": "danger",
+            "alert_type_friendly": "⚠️ Alerte",
+            "blurb": "<p>Suite aux derniers mouvements sociaux...</p>",
+            "start_at": "2026-01-06T08:11:00.000Z",
+            "end_at": "2026-01-10T17:00:00.000Z",
+            "published_at": "2026-01-06T08:11:00.000Z",
+        },
+        {
+            "id": 5411,
+            "name": "Encombrants sur Rendez-Vous",
+            "alert_type": "info",
+            "alert_type_friendly": "ℹ️ Information",
+            "blurb": "<p>À partir du 1er janvier 2026...</p>",
+            "start_at": "2026-01-01T07:00:00.000Z",
+            "end_at": "2026-02-01T07:00:00.000Z",
+            "published_at": "2026-01-01T07:00:00.000Z",
+        },
+    ]
+
+    class AlertCoordinator:
+        def __init__(self, alerts):
+            self.data = {"events": [], "collections": [], "alerts": alerts}
+
+        async def async_request_refresh(self):
+            return None
+
+    coordinator = AlertCoordinator(sample_alerts)
+    entry = SimpleNamespace(entry_id="test")
+    sensor = MelCollecteAlertSensor(coordinator, entry)
+
+    # Test native value (count)
+    assert sensor.native_value == 2
+
+    # Test attributes
+    attrs = sensor.extra_state_attributes
+    assert "alerts" in attrs
+    assert len(attrs["alerts"]) == 2
+    assert attrs["last_alert_name"] == "Conditions météorologiques"
+    assert attrs["last_alert_type"] == "danger"
+
+
+def test_alert_sensor_empty():
+    """Test du capteur d'alertes sans alertes."""
+    from custom_components.mel_collecte.sensor import MelCollecteAlertSensor
+
+    class AlertCoordinator:
+        def __init__(self):
+            self.data = {"events": [], "collections": [], "alerts": []}
+
+        async def async_request_refresh(self):
+            return None
+
+    coordinator = AlertCoordinator()
+    entry = SimpleNamespace(entry_id="test")
+    sensor = MelCollecteAlertSensor(coordinator, entry)
+
+    assert sensor.native_value == 0
+    attrs = sensor.extra_state_attributes
+    assert attrs["alerts"] == []
+

@@ -76,3 +76,28 @@ class MelCollecteAPI:
             payload = await response.json()
 
         return [hit["_source"] for hit in payload["hits"]["hits"]]
+
+    async def fetch_alerts(
+        self,
+        instance_id: str,
+        address_id: str,
+        size: int = 5,
+    ) -> list[dict[str, Any]]:
+        """Récupère les alertes du service de collecte."""
+        params: list[tuple[str, str]] = [
+            ("types[]", "Alert"),
+            ("states[]", "visible"),
+            ("include[]", "*model_name"),
+            ("instances[]", instance_id),
+            ("order[desc]", "published_at"),
+            ("address_id", address_id),
+            ("size", str(size)),
+        ]
+
+        async with async_timeout.timeout(20):
+            response = await self._session.get(SEARCH_URL, params=params)
+            response.raise_for_status()
+            payload = await response.json()
+
+        return [hit["_source"] for hit in payload["hits"]["hits"]]
+
