@@ -50,10 +50,21 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 if not self._address_payload:
                     raise UpdateFailed("Adresse introuvable dans l'API Publidata")
 
-            coordinates = self._address_payload["geometry"]["coordinates"]
+            geometry = self._address_payload.get("geometry", {})
+            coordinates = geometry.get("coordinates")
+            if (
+                not coordinates
+                or not isinstance(coordinates, list)
+                or len(coordinates) < 2
+            ):
+                raise UpdateFailed("Coordonnées invalides dans la réponse géocodage")
             fetched_lat = self.lat if self.lat is not None else coordinates[1]
             fetched_lon = self.lon if self.lon is not None else coordinates[0]
-            address_id = self._address_payload["properties"]["id"]
+
+            properties = self._address_payload.get("properties", {})
+            address_id = properties.get("id")
+            if not address_id:
+                raise UpdateFailed("ID d'adresse manquant dans la réponse géocodage")
 
             collections = await self.api.fetch_waste_collections(
                 instance_id=self.instance_id,

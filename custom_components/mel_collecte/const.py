@@ -39,4 +39,3 @@ def garbage_label(code: str) -> str:
 def alert_label(alert_type: str) -> str:
     """Retourne un libellé humain pour le type d'alerte."""
     return ALERT_TYPE_LABELS.get(alert_type.lower(), alert_type.capitalize())
-

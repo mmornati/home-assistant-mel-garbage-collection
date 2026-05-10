@@ -13,6 +13,9 @@ from .const import GEO_URL, SEARCH_URL
 LOGGER = logging.getLogger(__name__)
 
 
+MAX_GEOCODE_CACHE_SIZE = 100
+
+
 class MelCollecteAPI:
     """Fournit les appels nécessaires à l'intégration."""
 
@@ -41,10 +44,17 @@ class MelCollecteAPI:
             response.raise_for_status()
             payload = await response.json()
 
-        features = payload[0]["data"]["features"] if payload else []
-        if not features:
+        if not payload or not isinstance(payload, list) or not payload[0]:
+            return None
+        data = payload[0].get("data")
+        if not data:
+            return None
+        features = data.get("features")
+        if not features or not isinstance(features, list):
             return None
         feature = features[0]
+        if len(self._geocode_cache) >= MAX_GEOCODE_CACHE_SIZE:
+            self._geocode_cache.clear()
         self._geocode_cache[cache_key] = feature
         return feature
 
@@ -75,7 +85,11 @@ class MelCollecteAPI:
             response.raise_for_status()
             payload = await response.json()
 
-        return [hit["_source"] for hit in payload["hits"]["hits"]]
+        hits = payload.get("hits", {})
+        hits_list = hits.get("hits")
+        if not hits_list or not isinstance(hits_list, list):
+            return []
+        return [hit.get("_source") for hit in hits_list if hit.get("_source")]
 
     async def fetch_alerts(
         self,
@@ -99,5 +113,8 @@ class MelCollecteAPI:
             response.raise_for_status()
             payload = await response.json()
 
-        return [hit["_source"] for hit in payload["hits"]["hits"]]
-
+        hits = payload.get("hits", {})
+        hits_list = hits.get("hits")
+        if not hits_list or not isinstance(hits_list, list):
+            return []
+        return [hit.get("_source") for hit in hits_list if hit.get("_source")]
