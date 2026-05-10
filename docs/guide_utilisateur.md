@@ -159,9 +159,37 @@ Cette carte affiche toutes les alertes actives avec leur type (⚠️ Alerte, �
 
 ## 7. Automatisations possibles
 
-- **Notification la veille** : déclencher à 20h si `sensor.collecte_dechets_verts` est à moins de 24h.
+### 7.1 Événements natifs (Nouveau)
+
+L'intégration déclenche automatiquement un événement `mel_collecte.collection_upcoming` lorsqu'une collecte approche. Cela permet de créer des automatisations simples sans utiliser de modèles (templates).
+
+**Configuration du délai :**
+Par défaut, l'événement est déclenché 24 heures avant le début de la collecte. Vous pouvez modifier ce délai via le service `mel_collecte.set_collection_offset` :
+```yaml
+service: mel_collecte.set_collection_offset
+data:
+  hours_before: 12
+```
+
+**Exemple d'automatisation :**
+```yaml
+automation:
+  - trigger:
+      - platform: event
+        event_type: mel_collecte.collection_upcoming
+    condition:
+      - condition: template
+        value_template: "{{ trigger.event.data.garbage_types | first == 'omr' }}"
+    action:
+      - service: notify.mobile_app
+        data:
+          message: "Pensez à sortir la poubelle grise dans {{ trigger.event.data.hours_until }} heures !"
+```
+
+### 7.2 Autres automatisations
+- **Notification la veille** : déclencher à 20h si `sensor.collecte_dechets_verts_dans` est à 1.
 - **Rappel vocal** : utiliser `sensor.prochaine_collecte` dans un script TTS.
-- **Gestion des bacs** : combiner avec `input_boolean` pour savoir quel bac est sorti.
+- **Gestion des bacs** : combiner avec un `input_boolean` pour savoir quel bac est sorti.
 
 ---
 

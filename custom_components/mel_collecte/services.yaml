@@ -7,3 +7,23 @@ force_refresh:
       description: "Identifiant spécifique de l'intégration à mettre à jour (optionnel, mettra à jour toutes les instances par défaut)."
       example: "0123456789abcdef"
       advanced: true
+
+set_collection_offset:
+  name: "Définir le délai d'alerte de collecte"
+  description: "Configure le nombre d'heures avant une collecte pour le déclenchement de l'événement mel_collecte.collection_upcoming."
+  fields:
+    hours_before:
+      name: "Heures avant la collecte"
+      description: "Nombre d'heures (par défaut: 24)."
+      example: "24"
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 168
+          mode: box
+    entry_id:
+      name: "ID de l'intégration"
+      description: "Identifiant spécifique de l'intégration (optionnel)."
+      example: "0123456789abcdef"
+      advanced: true

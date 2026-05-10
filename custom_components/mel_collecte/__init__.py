@@ -6,6 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.typing import ConfigType
+from homeassistant.util import dt as dt_util
 import voluptuous as vol
 
 try:  # pragma: no cover - fallback pour exécution hors HA (tests)
@@ -28,6 +29,7 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL,
     DEFAULT_VISIBLE_TYPES,
     DOMAIN,
+    EVENT_COLLECTION_UPCOMING,
 )
 from .coordinator import MelCollecteCoordinator
 
@@ -68,6 +70,39 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DOMAIN][entry.entry_id] = {DATA_COORDINATOR: coordinator}
 
+    async def _async_fire_events() -> None:
+        if not coordinator.data:
+            return
+
+        now = dt_util.utcnow()
+        for event in coordinator.data.get("events", []):
+            start = event["start"]
+            time_until = start - now
+            hours_until = time_until.total_seconds() / 3600
+
+            if 0 <= hours_until <= coordinator.collection_offset_hours:
+                event_key = (event["collection_id"], start.isoformat())
+                if event_key not in coordinator.fired_events:
+                    coordinator.fired_events.add(event_key)
+
+                    payload = {
+                        "entry_id": entry.entry_id,
+                        "address": entry.data.get("address"),
+                        "collection_id": event["collection_id"],
+                        "collection_name": event.get("name"),
+                        "garbage_types": event["garbage_types"],
+                        "garbage_types_friendly": event["garbage_types_friendly"],
+                        "start": start.isoformat(),
+                        "end": event["end"].isoformat(),
+                        "days_until": time_until.days,
+                        "hours_until": int(hours_until),
+                    }
+                    hass.bus.async_fire(
+                        f"{DOMAIN}.{EVENT_COLLECTION_UPCOMING}", payload
+                    )
+
+    entry.async_on_unload(coordinator.async_add_listener(_async_fire_events))
+
     async def async_handle_refresh_service(call):
         """Force refresh of all or specific entries."""
         entry_id = call.data.get("entry_id")
@@ -89,6 +124,33 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         schema=vol.Schema({vol.Optional("entry_id"): str}),
     )
 
+    async def async_handle_set_offset_service(call):
+        """Configure event lead time (offset)."""
+        entry_id = call.data.get("entry_id")
+        hours_before = call.data.get("hours_before", 24)
+        if entry_id:
+            if entry_id in hass.data.get(DOMAIN, {}):
+                coord = hass.data[DOMAIN][entry_id].get(DATA_COORDINATOR)
+                if coord:
+                    coord.collection_offset_hours = hours_before
+        else:
+            for instance_id in hass.data.get(DOMAIN, {}):
+                coord = hass.data[DOMAIN][instance_id].get(DATA_COORDINATOR)
+                if coord:
+                    coord.collection_offset_hours = hours_before
+
+    hass.services.async_register(
+        DOMAIN,
+        "set_collection_offset",
+        async_handle_set_offset_service,
+        schema=vol.Schema(
+            {
+                vol.Optional("entry_id"): str,
+                vol.Required("hours_before"): vol.Coerce(int),
+            }
+        ),
+    )
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
@@ -100,4 +162,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id, None)
         if not hass.data[DOMAIN]:
             hass.services.async_remove(DOMAIN, "force_refresh")
+            hass.services.async_remove(DOMAIN, "set_collection_offset")
     return unload_ok
