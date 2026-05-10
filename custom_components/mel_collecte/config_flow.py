@@ -43,7 +43,7 @@ class MelCollecteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: 
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: config_entries.ConfigEntry):
-        return MelCollecteOptionsFlow()
+        return MelCollecteOptionsFlow(config_entry)
 
 
 class MelCollecteOptionsFlow(config_entries.OptionsFlowWithConfigEntry):
