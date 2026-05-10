@@ -42,6 +42,7 @@ L'intégration crée automatiquement les entités ci-dessous.
 |--------|------|-------------|
 | `calendar.collectes_des_dechets` | Calendrier | Toutes les collectes à venir (90 jours) |
 | `sensor.prochaine_collecte` | Capteur | Prochaine collecte avec attributs détaillés |
+| `sensor.jours_avant_prochaine_collecte` | Capteur | Nombre de jours (entier) avant la prochaine collecte |
 | `sensor.collecte_<type>` | Capteur | Un capteur par type (`dechets_verts`, `emballages`, …) |
 | `sensor.alertes_collecte` | Capteur | Alertes actives du service |
 
@@ -158,7 +159,7 @@ Le parser (`parser.py`) convertit les chaînes `opening_hours` (ex: `week 1-52/2
 
 **Horaires incorrects ?** Les données viennent de Publidata. Ouvrez une issue si un format est mal parsé.
 
-**Comment_forcer un rafraîchissement ?** Redémarrez Home Assistant ou supprimez/réinstallez l'intégration.
+**Comment_forcer un rafraîchissement ?** Vous pouvez appeler le service `mel_collecte.force_refresh` (disponible dans *Outils de développement → Services*) pour rafraîchir les données immédiatement.
 
 ---
 

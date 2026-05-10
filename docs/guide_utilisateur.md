@@ -63,6 +63,7 @@ L'intégration permet de personnaliser plusieurs paramètres après l'ajout init
   - `types_friendly` (libellés français : "Ordures ménagères résiduelles", "Déchets verts"…),
   - `mode` (ramassage, dépôt, RDV…),
   - `debut` / `fin`.
+- `sensor.jours_avant_prochaine_collecte` : indique le nombre entier de jours restants avant la prochaine collecte.
 - `sensor.collecte_<type>` : un capteur par type détecté (`sensor.collecte_dechets_verts`, etc.).
 - `sensor.alertes_collecte` : nombre d'alertes actives du service de collecte, avec attributs :
   - `alerts` : liste complète des alertes avec détails (id, nom, type, message, dates),
@@ -170,6 +171,7 @@ Cette carte affiche toutes les alertes actives avec leur type (⚠️ Alerte, �
 - **Horaires incorrects** : les données Publidata font foi. Les événements sont générés à partir des créneaux `opening_hours`. Si un format inattendu apparaît, ouvrir une issue sur le dépôt.
 - **Trash Card sans affichage** : vérifier que l'entité calendrier est bien configurée dans la carte et que les patterns correspondent aux libellés exacts.
 - **Types de déchets non affichés** : vérifier dans les options que les types souhaités sont bien sélectionnés. Un type non sélectionné n'apparaît ni dans les capteurs ni dans le calendrier.
+- **Rafraîchissement manuel** : Vous pouvez appeler le service `mel_collecte.force_refresh` via *Outils de développement → Services* pour forcer une mise à jour immédiate sans redémarrer Home Assistant.
 
 ### 8.1 Logique de réessai et gestion des erreurs
 
