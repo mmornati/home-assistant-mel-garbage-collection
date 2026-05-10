@@ -73,6 +73,13 @@ pattern:
     pattern: Emballages recyclables
 ```
 
+### Événements et Automatisations
+
+L'intégration déclenche un événement natif `mel_collecte.collection_upcoming` lorsqu'une collecte approche, idéal pour vos automatisations sans nécessiter de modèles (templates) complexes.
+
+* Le délai de déclenchement (par défaut : 24h avant la collecte) est modifiable via le service `mel_collecte.set_collection_offset`.
+* Les données de l'événement incluent : `collection_id`, `garbage_types`, `garbage_types_friendly`, `start`, `hours_until`, etc.
+
 ---
 
 ## Architecture

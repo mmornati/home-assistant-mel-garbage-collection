@@ -3,6 +3,9 @@
 DOMAIN = "mel_collecte"
 DATA_COORDINATOR = "coordinator"
 
+EVENT_COLLECTION_UPCOMING = "collection_upcoming"
+DEFAULT_COLLECTION_OFFSET = 24
+
 GEO_URL = "https://api.publidata.io/v2/geocoder"
 SEARCH_URL = "https://api.publidata.io/v2/search"
 

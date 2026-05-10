@@ -15,6 +15,7 @@ from .const import (
     DEFAULT_LOOKAHEAD_DAYS,
     DEFAULT_UPDATE_INTERVAL,
     DEFAULT_VISIBLE_TYPES,
+    DEFAULT_COLLECTION_OFFSET,
     alert_label,
     garbage_label,
 )
@@ -56,6 +57,9 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self._address_payload: dict[str, Any] | None = None
         self._last_update_success: datetime | None = None
+
+        self.fired_events: set[tuple[str, str]] = set()
+        self.collection_offset_hours = DEFAULT_COLLECTION_OFFSET
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
