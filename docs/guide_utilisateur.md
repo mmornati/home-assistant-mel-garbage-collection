@@ -171,6 +171,23 @@ Cette carte affiche toutes les alertes actives avec leur type (⚠️ Alerte, �
 - **Trash Card sans affichage** : vérifier que l'entité calendrier est bien configurée dans la carte et que les patterns correspondent aux libellés exacts.
 - **Types de déchets non affichés** : vérifier dans les options que les types souhaités sont bien sélectionnés. Un type non sélectionné n'apparaît ni dans les capteurs ni dans le calendrier.
 
+### 8.1 Logique de réessai et gestion des erreurs
+
+L'intégration distingue deux catégories d'erreurs lors des appels à l'API Publidata :
+
+| Catégorie | Exemples | Comportement |
+|-----------|----------|-------------|
+| **Erreur transitoire** | Erreur réseau, timeout, HTTP 429 (trop de requêtes), HTTP 5xx | Réessai automatique jusqu'à 3 fois avec délai exponentiel (1 s, 2 s, 4 s) |
+| **Erreur permanente** | HTTP 400, 401, 403, 404 (adresse invalide, clé API incorrecte) | Aucun réessai — erreur remontée immédiatement |
+
+En cas de code HTTP **429 (Too Many Requests)**, l'en-tête `Retry-After` est respecté si présent ; sinon le backoff exponentiel s'applique avec un plafond de 30 secondes.
+
+Après épuisement de toutes les tentatives, le coordinateur marque la mise à jour comme échouée mais ne plante pas Home Assistant. La prochaine mise à jour planifiée repartira du début.
+
+**Suivi de la fraîcheur des données** : l'attribut `last_update_success` (disponible dans `Outils de développement → États` sur chaque entité) indique l'horodatage ISO de la dernière récupération réussie. Si cette valeur est ancienne alors que l'intégration semble active, vérifier le journal pour des erreurs transitoires répétées.
+
+**Consulter les journaux** : les erreurs transitoires sont consignées au niveau `WARNING` (pas `ERROR`), ce qui permet de les filtrer facilement dans `Paramètres → Système → Journaux`.
+
 ---
 
 ## 9. Mise à jour

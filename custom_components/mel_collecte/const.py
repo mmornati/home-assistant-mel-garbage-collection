@@ -12,6 +12,20 @@ DEFAULT_UPDATE_INTERVAL = 7
 DEFAULT_LOOKAHEAD_DAYS = 90
 DEFAULT_VISIBLE_TYPES: list[str] = []
 
+# Retry configuration
+MAX_RETRIES = 3
+RETRY_BASE_DELAY = 1  # seconds
+RETRY_MAX_DELAY = 30  # seconds
+
+
+class TransientError(Exception):
+    """Erreur transitoire (réseau, timeout, limite de débit) — réessayable."""
+
+
+class PermanentError(Exception):
+    """Erreur permanente (adresse invalide, clé API incorrecte) — ne pas réessayer."""
+
+
 GARBAGE_TYPES_LABELS = {
     "omr": "Ordures ménagères résiduelles",
     "dv": "Déchets verts",
