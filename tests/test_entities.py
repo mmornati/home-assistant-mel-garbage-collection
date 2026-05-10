@@ -207,4 +207,3 @@ def test_alert_sensor_empty():
     assert sensor.native_value == 0
     attrs = sensor.extra_state_attributes
     assert attrs["alerts"] == []
-
