@@ -18,3 +18,4 @@ Thumbs.db
 home-assistant.log
 *.log
 
+.agents
