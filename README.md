@@ -44,6 +44,7 @@ L'intégration crée automatiquement les entités ci-dessous.
 | `sensor.prochaine_collecte` | Capteur | Prochaine collecte avec attributs détaillés |
 | `sensor.jours_avant_prochaine_collecte` | Capteur | Nombre de jours (entier) avant la prochaine collecte |
 | `sensor.collecte_<type>` | Capteur | Un capteur par type (`dechets_verts`, `emballages`, …) |
+| `sensor.collecte_<type>_dans` | Capteur | Nombre de jours avant la prochaine collecte pour ce type |
 | `sensor.alertes_collecte` | Capteur | Alertes actives du service |
 
 **Attributs disponibles** : `types`, `types_friendly`, `mode`, `debut`, `fin`, `accepted_waste`, `rejected_waste`.
