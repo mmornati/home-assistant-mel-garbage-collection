@@ -16,17 +16,21 @@ from .const import DATA_COORDINATOR, DOMAIN
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Créer l'entité calendrier."""
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
-    async_add_entities([MelCollecteCalendar(coordinator, entry)])
+    options = entry.options or {}
+    visible_types = options.get("visible_types") or []
+    async_add_entities([MelCollecteCalendar(coordinator, entry, visible_types)])
 
 
 class MelCollecteCalendar(CalendarEntity):
     """Calendrier regroupant l'ensemble des collectes."""
 
     _attr_has_entity_name = True
+    _attr_has_time = True
 
-    def __init__(self, coordinator, entry):
+    def __init__(self, coordinator, entry, visible_types: list[str] | None = None):
         self._coordinator = coordinator
         self._entry = entry
+        self._visible_types = visible_types or []
         self._attr_unique_id = f"{entry.entry_id}_calendar"
         self._attr_name = "Collectes des déchets"
 
@@ -45,16 +49,21 @@ class MelCollecteCalendar(CalendarEntity):
         data = self._coordinator.data or {}
         events = data.get("events", [])
         for evt in events:
-            if evt["start"] >= now:
-                friendly = (
-                    evt.get("garbage_types_friendly") or evt.get("garbage_types") or []
-                )
-                return CalendarEvent(
-                    summary=", ".join(friendly) or evt["name"],
-                    start=evt["start"],
-                    end=evt["end"],
-                    description=f"{evt['name']} • {', '.join(friendly)}",
-                )
+            if evt["start"] < now:
+                continue
+            if self._visible_types and not any(
+                t in self._visible_types for t in evt.get("garbage_types", [])
+            ):
+                continue
+            friendly = (
+                evt.get("garbage_types_friendly") or evt.get("garbage_types") or []
+            )
+            return CalendarEvent(
+                summary=", ".join(friendly) or evt["name"],
+                start=evt["start"],
+                end=evt["end"],
+                description=f"{evt['name']} • {', '.join(friendly)}",
+            )
         return None
 
     async def async_get_events(
@@ -66,6 +75,10 @@ class MelCollecteCalendar(CalendarEntity):
         data = self._coordinator.data or {}
         for evt in data.get("events", []):
             if evt["end"] < start_date or evt["start"] > end_date:
+                continue
+            if self._visible_types and not any(
+                t in self._visible_types for t in evt.get("garbage_types", [])
+            ):
                 continue
             friendly = (
                 evt.get("garbage_types_friendly") or evt.get("garbage_types") or []
