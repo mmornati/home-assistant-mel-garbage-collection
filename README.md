@@ -1,109 +1,167 @@
-## Intégration Home Assistant – Collecte des déchets MEL
+# MEL Collecte des déchets
 
-Ce dépôt contient un composant personnalisé Home Assistant permettant de récupérer les jours de collecte de la Métropole Européenne de Lille (MEL) via les APIs Publidata, et de les exposer sous forme :
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange)](https://github.com/hacs/integration)
+![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-41BDF5?logo=home-assistant&logoColor=white)
 
-- d’un calendrier (`calendar.mel_collectes`) ;
-- de capteurs (`sensor.mel_collecte_*`) indiquant la prochaine collecte globale et par type de poubelle.
-
-L’objectif est de pouvoir déclencher des automatisations (notifications, Trash Card, etc.) sans dépendre du widget MEL.
-
----
-
-### API utilisées
-
-1. **Géocodage** – obtenir l’identifiant d’adresse Publidata (clé `id`).
-   ```bash
-   curl 'https://api.publidata.io/v2/geocoder?q=EXAMPLE%20ADRESSE&limit=1&lookup=publidata'
-   ```
-
-2. **Collectes** – récupérer les services de collecte associés à l’adresse et leurs horaires.
-   ```bash
-   curl 'https://api.publidata.io/v2/search?size=999&types[]=Platform::Services::WasteCollection&instances[]=876&address_id=<ID_ADRESSE>'
-   ```
-   La réponse contient notamment :
-   - `metas.garbage_types`: codes des poubelles (`omr`, `dv`, `cs`, `enc`, …) ;
-   - `schedules[].opening_hours`: fréquence et horaire (ex. `week 1-52/2 Th 05:50-12:50`) ;
-   - `metas.accepted_waste` / `rejected_waste` ;
-   - `collection_mode` : ramassage devant la maison, dépôt, prise de RDV, etc.
-
-3. **Alertes** – récupérer les alertes et messages du service de collecte.
-   ```bash
-   curl 'https://api.publidata.io/v2/search?types[]=Alert&states[]=visible&include[]=*model_name&instances[]=876&order[desc]=published_at&address_id=<ID_ADRESSE>&size=5'
-   ```
-   La réponse contient :
-   - `name`: titre de l'alerte ;
-   - `alert_type`: type (`danger`, `warning`, `info`) ;
-   - `blurb`: contenu HTML du message ;
-   - `start_at` / `end_at`: période de validité.
+> **Ne ratez plus jamais une collecte !** Ce composant personnalisé récupère automatiquement les jours de passage pour la Métropole Européenne de Lille et les expose dans Home Assistant — calendriers, capteurs et alertes en un seul plugin.
 
 ---
 
-### Installation du composant
+## Utilisateurs
 
-1. Copier le dossier `custom_components/mel_collecte` dans votre dossier `config/custom_components` de Home Assistant (et redémarrer).
+### Pré-requis
 
-2. Depuis l’interface HA, ajouter l’intégration **“MEL Collecte des déchets”** puis saisir l’adresse complète.
+- Home Assistant **2024.6+** (Core, OS ou Supervised)
+- Une adresse dans la Métropole Européenne de Lille
 
-3. L’intégration interroge l’API Publidata :
-   - Géocodage de l’adresse (une fois) ;
-   - récupération des collectes et des alertes (au démarrage puis chaque semaine) ;
-   - génération d’évènements jusqu’à 90 jours à partir des horaires fournis.
+### Installation
 
----
+#### via HACS *(recommandé)*
+
+1. Ajouter ce dépôt comme dépôt personnalisé dans HACS
+2. Rechercher **"MEL Collecte des déchets"** et installer
+3. Redémarrer Home Assistant
+
+#### Manuelle
+
+1. Copier `custom_components/mel_collecte/` dans `config/custom_components/`
+2. Redémarrer Home Assistant
+
+### Configuration
+
+1. **Paramètres → Appareils & services → Ajouter une intégration**
+2. Rechercher **"MEL Collecte des déchets"**
+3. Saisir l'adresse (ex: `19 rue Gambetta, 59000 Lille`)
+
+L'intégration crée automatiquement les entités ci-dessous.
 
 ### Entités créées
 
-- `calendar.mel_collectes` : calendrier contenant l’ensemble des collectes ;
-- `sensor.prochaine_collecte` : date/heure ISO de la prochaine collecte ;
-- `sensor.collecte_<type>` : une entité par type (`omr`, `dv`, …) avec date de la prochaine collecte correspondante ;
-- `sensor.alertes_collecte` : nombre d'alertes actives du service, avec détails dans les attributs.
+| Entité | Type | Description |
+|--------|------|-------------|
+| `calendar.collectes_des_dechets` | Calendrier | Toutes les collectes à venir (90 jours) |
+| `sensor.prochaine_collecte` | Capteur | Prochaine collecte avec attributs détaillés |
+| `sensor.collecte_<type>` | Capteur | Un capteur par type (`dechets_verts`, `emballages`, …) |
+| `sensor.alertes_collecte` | Capteur | Alertes actives du service |
 
-Chaque entité expose des attributs (`mode`, `types`, `collection_id`, etc.) pour faciliter les automatisations/notifications.
+**Attributs disponibles** : `types`, `types_friendly`, `mode`, `debut`, `fin`, `accepted_waste`, `rejected_waste`.
 
----
+### Affichage recommandé
 
-### Documentation utilisateur
+Pour une carte visuelle, installez [Trash Card](https://github.com/idaho/hassio-trash-card) via HACS :
 
-Une notice complète (installation, configuration, intégration avec la carte [Trash Card](https://github.com/idaho/hassio-trash-card) et patterns des libellés) est disponible dans `docs/guide_utilisateur.md`.
-
----
-
-### Personnalisation / pistes d’évolution
-
-- Mapper les codes `garbage_types` vers des libellés en clair ou des icônes personnalisées.
-- Afficher les listes `accepted_waste` / `rejected_waste` dans des cartes Lovelace.
-- Prendre en charge les collectes `booking` (lien vers formulaire).
-- Ajouter un service Home Assistant pour forcer un rafraîchissement immédiatement.
-
----
-
-### Tests unitaires
-
-Des tests basiques sont fournis (`pytest` requis) :
-
-```bash
-pip install pytest
-pytest
+```yaml
+type: custom:trash-card
+entities:
+  - calendar.collectes_des_dechets
+next_days: 120
+pattern:
+  - label: Ordures ménagères
+    icon: mdi:trash-can
+    color: grey
+    pattern: Ordures ménagères résiduelles
+  - label: Déchets verts
+    icon: mdi:leaf
+    color: green
+    pattern: Déchets verts
+  - label: Emballages
+    icon: mdi:recycle
+    color: amber
+    pattern: Emballages recyclables
 ```
 
 ---
+
+## Architecture
+
+```mermaid
+graph LR
+    HA[Home Assistant] -->|config_flow| UI[Interface HA]
+    UI -->|address| GEO[API Géocodage<br/>api.publidata.io]
+    GEO -->|address_id| SEARCH[API Recherche<br/>api.publidata.io]
+    SEARCH -->|schedules| PARSE[Parser<br/>opening_hours]
+    PARSE -->|events| CAL[(Calendrier<br/>Google/CalDAV)]
+    SEARCH -->|alerts| ALERT[(Capteur<br/>Alertes)]
+    PARSE -->|sensors| SENS[Capteurs<br/>par type]
+```
+
+L'intégration interroge l'API Publidata au démarrage puis **toutes les semaines** (intervalle configurable).
+
+---
+
+## DEVELOPPEURS
 
 ### Structure du projet
 
+```mermaid
+graph TD
+    ROOT[home-assistant-mel-garbage-collection] --> CC[custom_components/]
+    ROOT --> TESTS[tests/]
+    CC --> MEL[mel_collecte/]
+    MEL --> INIT[__init__.py<br/>Entry points]
+    MEL --> CONFIG[config_flow.py<br/>UI wizard]
+    MEL --> API[api.py<br/>Publidata client]
+    MEL --> COORD[coordinator.py<br/>Data refresh]
+    MEL --> PARSER[parser.py<br/>Schedule parsing]
+    MEL --> CAL[calendar.py<br/>Calendar platform]
+    MEL --> SENS[sensor.py<br/>Sensor platform]
+    MEL --> CONST[const.py<br/>Constants]
+    TESTS --> TEST_API[test_api.py]
+    TESTS --> TEST_PARSER[test_parser.py]
 ```
-custom_components/mel_collecte/
-├── __init__.py
-├── api.py
-├── calendar.py
-├── config_flow.py
-├── const.py
-├── coordinator.py
-├── manifest.json
-├── parser.py
-├── sensor.py
-└── strings.json
+
+### Setup local
+
+```bash
+# Créer et activer le venv
+make install
+
+# Linter et tester
+make lint      # ruff + black + mypy
+make test      # pytest
+make format    # Appliquer black
 ```
+
+### Commandes utiles
+
+| Commande | Description |
+|----------|-------------|
+| `make install` | Installe les dépendances |
+| `make test` | Exécute les tests pytest |
+| `make lint` | Vérifie code (ruff, black, mypy) |
+| `make format` | Formate le code avec black |
+| `make build` | Génère `mel_collecte.zip` pour HACS |
+
+### APIs Publidata utilisées
+
+1. **Géocodage** — `GET /v2/geocoder?q=<adresse>` → `address_id`
+2. **Collectes** — `GET /v2/search?types[]=Platform::Services::WasteCollection&address_id=<id>`
+3. **Alertes** — `GET /v2/search?types[]=Alert&states[]=visible&address_id=<id>`
+
+### Parsing des horaires
+
+Le parser (`parser.py`) convertit les chaînes `opening_hours` (ex: `week 1-52/2 Th 05:50-12:50`) en événements calendario. Chaque créneau devient un événement `RRULE` avec récurrence bimensuelle.
+
+### Contribution
+
+1. Forker le dépôt
+2. Créer une branche (`feature/xxx` ou `fix/xxx`)
+3. Implémenter avec tests + linting (`make lint`)
+4. Ouvrir une Pull Request
 
 ---
 
-Bon tests ! N’hésitez pas à adapter la stratégie de parsing des horaires si d’autres formats apparaissent. Les contributions sont bienvenues.
+## FAQ
+
+**Aucune entité créée ?** Vérifiez que l'adresse est dans le périmètre MEL.
+
+**Horaires incorrects ?** Les données viennent de Publidata. Ouvrez une issue si un format est mal parsé.
+
+**Comment_forcer un rafraîchissement ?** Redémarrez Home Assistant ou supprimez/réinstallez l'intégration.
+
+---
+
+## Licence
+
+MIT — Contributions bienvenues !
