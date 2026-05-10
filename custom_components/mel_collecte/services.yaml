@@ -1,0 +1,9 @@
+force_refresh:
+  name: "Forcer le rafraîchissement"
+  description: "Force la mise à jour immédiate des données de collecte auprès de l'API Publidata."
+  fields:
+    entry_id:
+      name: "ID de l'intégration"
+      description: "Identifiant spécifique de l'intégration à mettre à jour (optionnel, mettra à jour toutes les instances par défaut)."
+      example: "0123456789abcdef"
+      advanced: true
