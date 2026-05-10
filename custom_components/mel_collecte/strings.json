@@ -19,28 +19,5 @@
     "abort": {
       "already_configured": "This address is already configured."
     }
-  },
-  "fr": {
-    "config": {
-      "step": {
-        "user": {
-          "title": "Collectes MEL",
-          "description": "Saisissez l'adresse à surveiller.",
-          "data": {
-            "address": "Adresse complète",
-            "latitude": "Latitude (optionnel)",
-            "longitude": "Longitude (optionnel)"
-          }
-        }
-      },
-      "error": {
-        "cannot_connect": "Connexion impossible.",
-        "address_not_found": "Adresse introuvable. Vérifiez l'orthographe.",
-        "outside_coverage": "Cette adresse n'est pas desservie par la Métropole Européenne de Lille."
-      },
-      "abort": {
-        "already_configured": "Cette adresse est déjà configurée."
-      }
-    }
   }
 }

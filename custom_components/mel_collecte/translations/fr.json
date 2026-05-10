@@ -4,27 +4,49 @@
       "prochaine_collecte": {
         "name": "Prochaine collecte",
         "state_attributes": {
-          "types": "Types",
-          "types_friendly": "Types (friendly)",
-          "mode": "Mode",
-          "debut": "Début",
-          "fin": "Fin"
+          "types": {
+            "name": "Types"
+          },
+          "types_friendly": {
+            "name": "Types (friendly)"
+          },
+          "mode": {
+            "name": "Mode"
+          },
+          "debut": {
+            "name": "Début"
+          },
+          "fin": {
+            "name": "Fin"
+          }
         }
       },
       "jours_avant_prochaine_collecte": {
         "name": "Jours avant prochaine collecte",
         "state_attributes": {
-          "next_collection_date": "Date de la prochaine collecte",
-          "next_collection_type": "Type de la prochaine collecte"
+          "next_collection_date": {
+            "name": "Date de la prochaine collecte"
+          },
+          "next_collection_type": {
+            "name": "Type de la prochaine collecte"
+          }
         }
       },
       "alertes_collecte": {
         "name": "Alertes collecte",
         "state_attributes": {
-          "alerts": "Alertes",
-          "last_alert_name": "Nom de la dernière alerte",
-          "last_alert_type": "Type de la dernière alerte",
-          "last_alert_message": "Message de la dernière alerte"
+          "alerts": {
+            "name": "Alertes"
+          },
+          "last_alert_name": {
+            "name": "Nom de la dernière alerte"
+          },
+          "last_alert_type": {
+            "name": "Type de la dernière alerte"
+          },
+          "last_alert_message": {
+            "name": "Message de la dernière alerte"
+          }
         }
       }
     },
@@ -32,33 +54,14 @@
       "collectes_des_dechets": {
         "name": "Collectes des déchets",
         "state_attributes": {
-          "derniere_mise_a_jour": "Dernière mise à jour",
-          "nombre_evenements": "Nombre d'événements"
+          "derniere_mise_a_jour": {
+            "name": "Dernière mise à jour"
+          },
+          "nombre_evenements": {
+            "name": "Nombre d'événements"
+          }
         }
       }
     }
-  },
-  "device": {
-    "collectes_mel": {
-      "name": "Collectes MEL",
-      "manufacturer": "Publidata / MEL"
-    }
-  },
-  "garbage_types": {
-    "omr": "Ordures ménagères résiduelles",
-    "dv": "Déchets verts",
-    "cs": "Cartons / sacs",
-    "enc": "Encombrants",
-    "bio": "Biodéchets",
-    "verre": "Verre",
-    "text": "Textiles",
-    "deee": "Déchets électroniques",
-    "pile": "Piles et batteries",
-    "emb": "Emballages recyclables"
-  },
-  "alert_types": {
-    "danger": "⚠️ Alerte",
-    "warning": "⚡ Avertissement",
-    "info": "ℹ️ Information"
   }
 }

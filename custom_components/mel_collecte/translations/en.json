@@ -4,27 +4,49 @@
       "prochaine_collecte": {
         "name": "Next collection",
         "state_attributes": {
-          "types": "Types",
-          "types_friendly": "Types (friendly)",
-          "mode": "Mode",
-          "debut": "Start",
-          "fin": "End"
+          "types": {
+            "name": "Types"
+          },
+          "types_friendly": {
+            "name": "Types (friendly)"
+          },
+          "mode": {
+            "name": "Mode"
+          },
+          "debut": {
+            "name": "Start"
+          },
+          "fin": {
+            "name": "End"
+          }
         }
       },
       "jours_avant_prochaine_collecte": {
         "name": "Days until next collection",
         "state_attributes": {
-          "next_collection_date": "Next collection date",
-          "next_collection_type": "Next collection type"
+          "next_collection_date": {
+            "name": "Next collection date"
+          },
+          "next_collection_type": {
+            "name": "Next collection type"
+          }
         }
       },
       "alertes_collecte": {
         "name": "Collection alerts",
         "state_attributes": {
-          "alerts": "Alerts",
-          "last_alert_name": "Last alert name",
-          "last_alert_type": "Last alert type",
-          "last_alert_message": "Last alert message"
+          "alerts": {
+            "name": "Alerts"
+          },
+          "last_alert_name": {
+            "name": "Last alert name"
+          },
+          "last_alert_type": {
+            "name": "Last alert type"
+          },
+          "last_alert_message": {
+            "name": "Last alert message"
+          }
         }
       }
     },
@@ -32,33 +54,14 @@
       "collectes_des_dechets": {
         "name": "Waste collections",
         "state_attributes": {
-          "derniere_mise_a_jour": "Last update",
-          "nombre_evenements": "Number of events"
+          "derniere_mise_a_jour": {
+            "name": "Last update"
+          },
+          "nombre_evenements": {
+            "name": "Number of events"
+          }
         }
       }
     }
-  },
-  "device": {
-    "collectes_mel": {
-      "name": "MEL Collections",
-      "manufacturer": "Publidata / MEL"
-    }
-  },
-  "garbage_types": {
-    "omr": "Residual household waste",
-    "dv": "Green waste",
-    "cs": "Cardboard / bags",
-    "enc": "Bulky items",
-    "bio": "Biowaste",
-    "verre": "Glass",
-    "text": "Textiles",
-    "deee": "Electronic waste",
-    "pile": "Batteries",
-    "emb": "Recyclable packaging"
-  },
-  "alert_types": {
-    "danger": "⚠️ Alert",
-    "warning": "⚡ Warning",
-    "info": "ℹ️ Information"
   }
 }
