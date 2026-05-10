@@ -8,7 +8,11 @@
   "documentation": "https://github.com/mmornati/home-assistant-mel-garbage-collection",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/mmornati/home-assistant-mel-garbage-collection/issues",
-  "requirements": [],
+  "quality_scale": "platinum",
+  "requirements": [
+    "aiohttp",
+    "async-timeout>=3.0,<5.0"
+  ],
   "version": "1.2.0"
 }
 
