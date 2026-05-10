@@ -1,0 +1,67 @@
+{
+  "entity": {
+    "sensor": {
+      "prochaine_collecte": {
+        "name": "Prochaine collecte",
+        "state_attributes": {
+          "types": {
+            "name": "Types"
+          },
+          "types_friendly": {
+            "name": "Types (friendly)"
+          },
+          "mode": {
+            "name": "Mode"
+          },
+          "debut": {
+            "name": "Début"
+          },
+          "fin": {
+            "name": "Fin"
+          }
+        }
+      },
+      "jours_avant_prochaine_collecte": {
+        "name": "Jours avant prochaine collecte",
+        "state_attributes": {
+          "next_collection_date": {
+            "name": "Date de la prochaine collecte"
+          },
+          "next_collection_type": {
+            "name": "Type de la prochaine collecte"
+          }
+        }
+      },
+      "alertes_collecte": {
+        "name": "Alertes collecte",
+        "state_attributes": {
+          "alerts": {
+            "name": "Alertes"
+          },
+          "last_alert_name": {
+            "name": "Nom de la dernière alerte"
+          },
+          "last_alert_type": {
+            "name": "Type de la dernière alerte"
+          },
+          "last_alert_message": {
+            "name": "Message de la dernière alerte"
+          }
+        }
+      }
+    },
+    "calendar": {
+      "collectes_des_dechets": {
+        "name": "Collectes des déchets",
+        "state_attributes": {
+          "derniere_mise_a_jour": {
+            "name": "Dernière mise à jour"
+          },
+          "nombre_evenements": {
+            "name": "Nombre d'événements"
+          }
+        }
+      }
+    }
+  }
+}

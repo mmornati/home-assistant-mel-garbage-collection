@@ -73,6 +73,15 @@ pattern:
     pattern: Emballages recyclables
 ```
 
+### Internationalisation
+
+L'intégration est disponible en **français** et en **anglais**. Pour changer la langue de Home Assistant :
+
+1. **Paramètres → Système → Générale** (ou **Paramètres → Tableau de bord → Langue** selon votre version)
+2. Modifiez la langue
+
+L'intégration affichera automatiquement toutes les entités, le flux de configuration et les événements de calendrier dans la langue configurée.
+
 ### Événements et Automatisations
 
 L'intégration déclenche un événement natif `mel_collecte.collection_upcoming` lorsqu'une collecte approche, idéal pour vos automatisations sans nécessiter de modèles (templates) complexes.

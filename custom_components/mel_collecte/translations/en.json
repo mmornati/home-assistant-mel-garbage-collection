@@ -1,0 +1,67 @@
+{
+  "entity": {
+    "sensor": {
+      "prochaine_collecte": {
+        "name": "Next collection",
+        "state_attributes": {
+          "types": {
+            "name": "Types"
+          },
+          "types_friendly": {
+            "name": "Types (friendly)"
+          },
+          "mode": {
+            "name": "Mode"
+          },
+          "debut": {
+            "name": "Start"
+          },
+          "fin": {
+            "name": "End"
+          }
+        }
+      },
+      "jours_avant_prochaine_collecte": {
+        "name": "Days until next collection",
+        "state_attributes": {
+          "next_collection_date": {
+            "name": "Next collection date"
+          },
+          "next_collection_type": {
+            "name": "Next collection type"
+          }
+        }
+      },
+      "alertes_collecte": {
+        "name": "Collection alerts",
+        "state_attributes": {
+          "alerts": {
+            "name": "Alerts"
+          },
+          "last_alert_name": {
+            "name": "Last alert name"
+          },
+          "last_alert_type": {
+            "name": "Last alert type"
+          },
+          "last_alert_message": {
+            "name": "Last alert message"
+          }
+        }
+      }
+    },
+    "calendar": {
+      "collectes_des_dechets": {
+        "name": "Waste collections",
+        "state_attributes": {
+          "derniere_mise_a_jour": {
+            "name": "Last update"
+          },
+          "nombre_evenements": {
+            "name": "Number of events"
+          }
+        }
+      }
+    }
+  }
+}
