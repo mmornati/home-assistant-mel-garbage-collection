@@ -1,54 +1,36 @@
 # Release Workflow
 #
-# This workflow handles the complete release process in two stages:
-#
-# Stage 1 (prepare_release - manual trigger):
-#   - Checks if manifest version needs updating (idempotent)
-#   - Updates manifest.json only if version is different
-#   - Creates and pushes git tag (safe if tag already exists)
-#   - Creates GitHub release (safe if release already exists)
-#
-# Stage 2 (build_and_upload_zip - triggered by release publish OR manual):
-#   - Builds integration zip from the tagged commit
-#   - Uploads zip to the GitHub release
-#
-# Manual Triggers:
-#   - Full release: Set version, leave build_zip_only unchecked
-#   - Zip only: Set version, check build_zip_only (for existing releases)
+# Complete release process in a single job:
+#   1. Checks if manifest version needs updating (idempotent)
+#   2. Updates manifest.json only if version is different
+#   3. Creates and pushes git tag (safe if tag already exists)
+#   4. Creates GitHub release (safe if release already exists)
+#   5. Builds integration zip from the tagged commit
+#   6. Uploads zip to the GitHub release
 #
 # Safety Features:
 #   ✅ Idempotent - safe to re-run for the same version
 #   ✅ Skips manifest commit if version is already correct
-#   ✅ Handles existing tags gracefully
+#   ✅ Handles existing tags gracefully (local and remote check)
 #   ✅ Handles existing releases gracefully
-#   ✅ Two-stage process prevents git conflicts
-#   ✅ Can manually build zip for existing releases
+#   ✅ Zip upload uses overwrite mode
 #
 name: Release Workflow
 
-'on':
+on:
   workflow_dispatch:
     inputs:
       version:
         description: 'Version number (e.g., v1.4.3)'
         required: true
         type: string
-      build_zip_only:
-        description: 'Only build and upload zip (skip release creation)'
-        required: false
-        type: boolean
-        default: false
-  release:
-    types: [published]
 
 permissions:
   contents: write
   id-token: write
 
 jobs:
-  # This job runs when manually triggered to prepare a release
-  prepare_release:
-    if: github.event_name == 'workflow_dispatch' && !inputs.build_zip_only
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -66,10 +48,8 @@ jobs:
         id: version_check
         run: |
           VERSION="${{ inputs.version }}"
-          # Remove 'v' prefix if present for manifest
           VERSION_NO_V="${VERSION#v}"
 
-          # Get current version from manifest
           CURRENT_VERSION=$(grep -o '"version": "[^"]*"' ./custom_components/mel_collecte/manifest.json | cut -d'"' -f4)
 
           echo "Current version in manifest: ${CURRENT_VERSION}"
@@ -92,21 +72,26 @@ jobs:
           git commit -m "Updating to version ${{ inputs.version }}"
           git push origin main
 
+      - name: Wait for Commit Propagation
+        if: steps.version_check.outputs.needs_update == 'true'
+        run: |
+          echo "Waiting for commit to propagate..."
+          sleep 5
+
       - name: Create and Push Tag
         run: |
-          # Check if tag already exists locally
-          if git rev-parse "${{ inputs.version }}" >/dev/null 2>&1; then
-            echo "Tag ${{ inputs.version }} already exists locally, skipping creation"
+          TAG_NAME="${{ inputs.version }}"
+
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Tag $TAG_NAME already exists locally"
           else
-            git tag ${{ inputs.version }}
-            echo "Created tag ${{ inputs.version }}"
+            git tag $TAG_NAME
+            echo "Created tag $TAG_NAME"
           fi
 
-          # Push tag (will succeed if tag exists remotely and points to same commit)
-          git push origin ${{ inputs.version }} || {
-            echo "Tag ${{ inputs.version }} may already exist remotely"
-            # Verify the tag exists
-            if git ls-remote --tags origin | grep -q "refs/tags/${{ inputs.version }}"; then
+          git push origin $TAG_NAME || {
+            echo "Tag push failed, checking if it exists remotely..."
+            if git ls-remote --tags origin | grep -q "refs/tags/$TAG_NAME"; then
               echo "Tag exists remotely, continuing..."
             else
               echo "Failed to push tag and it doesn't exist remotely"
@@ -114,13 +99,12 @@ jobs:
             fi
           }
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: actions/github-script@v8
         with:
           script: |
             const tagName = '${{ inputs.version }}';
 
-            // Check if release already exists
             try {
               const { data: existingRelease } = await github.rest.repos.getReleaseByTag({
                 owner: context.repo.owner,
@@ -129,15 +113,15 @@ jobs:
               });
               console.log(`Release ${tagName} already exists: ${existingRelease.html_url}`);
               console.log('Skipping release creation');
+              core.setOutput('release_id', existingRelease.id);
+              core.setOutput('release_url', existingRelease.html_url);
               return;
             } catch (error) {
               if (error.status !== 404) {
                 throw error;
               }
-              // Release doesn't exist, continue to create it
             }
 
-            // Create the release
             const { data: release } = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -148,43 +132,19 @@ jobs:
               generate_release_notes: true
             });
             console.log(`Created release ${release.html_url}`);
+            core.setOutput('release_id', release.id);
+            core.setOutput('release_url', release.html_url);
 
-  # This job runs when a release is published to create and upload the zip
-  # OR when manually triggered with build_zip_only option
-  build_and_upload_zip:
-    if: |
-      (github.event_name == 'release' && github.event.release.draft == false) ||
-      (github.event_name == 'workflow_dispatch' && inputs.build_zip_only)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.version }}
-          fetch-depth: 0
-
-      - name: Debug Release Info
+      - name: Checkout Tag for Build
         run: |
-          echo "Event: ${{ github.event_name }}"
-          if [ "${{ github.event_name }}" = "release" ]; then
-            echo "Tag: ${{ github.event.release.tag_name }}"
-            echo "Target: ${{ github.event.release.target_commitish }}"
-            echo "Draft: ${{ github.event.release.draft }}"
-            echo "Prerelease: ${{ github.event.release.prerelease }}"
-          else
-            echo "Manual trigger for version: ${{ inputs.version }}"
-          fi
+          git fetch --tags
+          git checkout ${{ inputs.version }}
 
       - name: Verify Manifest Version
         run: |
           MANIFEST_VERSION=$(grep -o '"version": "[^"]*"' \
             ./custom_components/mel_collecte/manifest.json | cut -d'"' -f4)
-
-          if [ "${{ github.event_name }}" = "release" ]; then
-            TAG_VERSION="${{ github.event.release.tag_name }}"
-          else
-            TAG_VERSION="${{ inputs.version }}"
-          fi
+          TAG_VERSION="${{ inputs.version }}"
           TAG_VERSION_NO_V="${TAG_VERSION#v}"
 
           echo "Manifest version: ${MANIFEST_VERSION}"
@@ -194,13 +154,12 @@ jobs:
             echo "ERROR: Manifest version (${MANIFEST_VERSION}) does not match tag version (${TAG_VERSION_NO_V})"
             exit 1
           fi
+          echo "✅ Version verification passed"
 
       - name: Create Zip Archive
         run: |
           cd custom_components/mel_collecte
-          # Remove any existing zip
           rm -f mel_collecte.zip
-          # Create zip with all files except git, cache, and python bytecode
           zip -r mel_collecte.zip . \
             -x "*.git*" \
             -x "*__pycache__*" \
@@ -208,19 +167,19 @@ jobs:
             -x "*.pyo" \
             -x "*.DS_Store" \
             -x "*.pytest_cache*"
-          # Verify zip was created
           if [ ! -f "mel_collecte.zip" ]; then
             echo "ERROR: Failed to create zip file"
             exit 1
           fi
-          echo "✅ Zip created successfully: $(ls -lh mel_collecte.zip)"
+          echo "✅ Zip created: $(ls -lh mel_collecte.zip)"
           zipinfo mel_collecte.zip | head -20
 
       - name: Upload Zip to Release
         uses: softprops/action-gh-release@v2
         with:
           files: ./custom_components/mel_collecte/mel_collecte.zip
-          tag_name: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.version }}
+          tag_name: ${{ inputs.version }}
+          overwrite: true
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -228,11 +187,7 @@ jobs:
       - name: Upload Zip as Artifact
         uses: actions/upload-artifact@v5
         with:
-          name: >-
-            mel_collecte-${{
-              github.event_name == 'release' &&
-              github.event.release.tag_name || inputs.version
-            }}
+          name: mel_collecte-${{ inputs.version }}
           path: ./custom_components/mel_collecte/mel_collecte.zip
           if-no-files-found: error
           retention-days: 90
