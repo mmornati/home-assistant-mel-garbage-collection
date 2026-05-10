@@ -13,12 +13,11 @@
     },
     "error": {
       "cannot_connect": "Connexion impossible.",
-      "address_not_found": "Adresse introuvable. Vérifiez l'orthographe.",
-      "outside_coverage": "Cette adresse n'est pas desservie par la Métropole Européenne de Lille."
+      "address_not_found": "Adresse introuvable. Vérifiez l'orthographe."
     },
     "abort": {
-      "already_configured": "Cette adresse est déjà configurée."
+      "already_configured": "Cette adresse est déjà configurée.",
+      "outside_coverage": "Cette adresse n'est pas desservie par la Métropole Européenne de Lille."
     }
   }
 }
-
