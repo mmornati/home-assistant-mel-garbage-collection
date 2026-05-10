@@ -4,4 +4,5 @@ ruff
 black
 mypy
 async-timeout
+voluptuous
 

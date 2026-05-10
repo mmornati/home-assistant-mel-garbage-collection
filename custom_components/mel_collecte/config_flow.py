@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import asyncio
 import voluptuous as vol
+from aiohttp import ClientError
 from homeassistant import config_entries
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import callback
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .api import MelCollecteAPI
 from .const import (
     DEFAULT_INSTANCE_ID,
     DEFAULT_LOOKAHEAD_DAYS,
@@ -30,6 +34,49 @@ class MelCollecteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: 
 
         await self.async_set_unique_id(user_input[CONF_ADDRESS])
         self._abort_if_unique_id_configured()
+
+        session = async_get_clientsession(self.hass)
+        api = MelCollecteAPI(session)
+
+        try:
+            feature = await asyncio.wait_for(
+                api.geocode_address(user_input[CONF_ADDRESS]), timeout=20
+            )
+        except asyncio.TimeoutError:
+            return self.async_abort(reason="cannot_connect")
+        except ClientError:
+            return self.async_abort(reason="cannot_connect")
+
+        if feature is None:
+            return self.async_abort(reason="address_not_found")
+
+        properties = feature.get("properties", {})
+        address_id = properties.get("id")
+        if not address_id:
+            return self.async_abort(reason="outside_coverage")
+
+        geometry = feature.get("geometry", {})
+        coordinates = geometry.get("coordinates", [])
+        lat = coordinates[1] if len(coordinates) >= 2 else None
+        lon = coordinates[0] if len(coordinates) >= 2 else None
+
+        try:
+            collections = await asyncio.wait_for(
+                api.fetch_waste_collections(
+                    instance_id=DEFAULT_INSTANCE_ID,
+                    address_id=address_id,
+                    lat=lat,
+                    lon=lon,
+                ),
+                timeout=20,
+            )
+        except asyncio.TimeoutError:
+            return self.async_abort(reason="cannot_connect")
+        except ClientError:
+            return self.async_abort(reason="cannot_connect")
+
+        if not collections:
+            return self.async_abort(reason="outside_coverage")
 
         return self.async_create_entry(
             title=user_input[CONF_ADDRESS],
