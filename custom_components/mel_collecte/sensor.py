@@ -36,6 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
                 continue
             seen_types.add(garbage_type)
             entities.append(MelCollecteTypeSensor(coordinator, entry, garbage_type))
+            entities.append(MelCollecteTypeDaysSensor(coordinator, entry, garbage_type))
 
     async_add_entities(entities)
 
@@ -167,6 +168,46 @@ class MelCollecteTypeSensor(MelCollecteBaseSensor):
             "types_friendly": event.get("garbage_types_friendly"),
             "debut": event["start"].isoformat(),
             "fin": event["end"].isoformat(),
+        }
+
+    def _next_event_for_type(self):
+        now = dt_util.utcnow()
+        data = self._coordinator.data or {}
+        for event in data.get("events", []):
+            if event["start"] >= now and self._type in event["garbage_types"]:
+                return event
+        return None
+
+
+class MelCollecteTypeDaysSensor(MelCollecteBaseSensor):
+    """Capteur indiquant le nombre de jours avant la prochaine collecte d'un type spécifique."""
+
+    def __init__(self, coordinator, entry, garbage_type: str):
+        super().__init__(coordinator, entry)
+        self._type = garbage_type
+        self._attr_unique_id = f"{entry.entry_id}_type_{garbage_type}_days"
+        self._label = garbage_label(garbage_type)
+        self._attr_name = f"Collecte {self._label} dans"
+        self._attr_native_unit_of_measurement = "jours"
+        self._attr_icon = "mdi:calendar-clock"
+
+    @property
+    def native_value(self):
+        event = self._next_event_for_type()
+        if event:
+            delta = event["start"].date() - dt_util.now().date()
+            return delta.days
+        return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        event = self._next_event_for_type()
+        if not event:
+            return {}
+        return {
+            "prochaine_collecte": event["start"].isoformat(),
+            "type": self._type,
+            "type_libelle": self._label,
         }
 
     def _next_event_for_type(self):

@@ -8,6 +8,7 @@ from custom_components.mel_collecte.calendar import MelCollecteCalendar
 from custom_components.mel_collecte.sensor import (
     MelCollecteNextSensor,
     MelCollecteTypeSensor,
+    MelCollecteTypeDaysSensor,
     MelCollecteAlertSensor,
 )
 
@@ -443,6 +444,58 @@ class TestSensorEdgeCases:
         sensor = MelCollecteTypeSensor(coordinator, entry, "omr")
 
         assert "Ordures ménagères résiduelles" in sensor.name
+
+    def test_type_days_sensor_calculates_days(self):
+        """MelCollecteTypeDaysSensor calcule correctement le nombre de jours."""
+        now = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        events = [
+            {
+                "collection_id": "col_omr",
+                "garbage_types": ["omr"],
+                "garbage_types_friendly": ["Ordures ménagères résiduelles"],
+                "collection_mode": "door",
+                "start": now + timedelta(days=2),
+                "end": now + timedelta(days=2, hours=2),
+                "name": "OMR Collection",
+            },
+        ]
+        coordinator = DummyCoordinator(events, [])
+        entry = SimpleNamespace(entry_id="test")
+        sensor = MelCollecteTypeDaysSensor(coordinator, entry, "omr")
+
+        with patch(
+            "custom_components.mel_collecte.sensor.dt_util.utcnow", return_value=now
+        ), patch(
+            "custom_components.mel_collecte.sensor.dt_util.now",
+            return_value=now,
+            create=True,
+        ):
+            value = sensor.native_value
+            attrs = sensor.extra_state_attributes
+
+        assert value == 2
+        assert attrs["type"] == "omr"
+        assert attrs["prochaine_collecte"] == events[0]["start"].isoformat()
+
+    def test_type_days_sensor_returns_none_if_no_event(self):
+        """MelCollecteTypeDaysSensor retourne None si aucun événement."""
+        now = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        coordinator = DummyCoordinator([], [])
+        entry = SimpleNamespace(entry_id="test")
+        sensor = MelCollecteTypeDaysSensor(coordinator, entry, "omr")
+
+        with patch(
+            "custom_components.mel_collecte.sensor.dt_util.utcnow", return_value=now
+        ), patch(
+            "custom_components.mel_collecte.sensor.dt_util.now",
+            return_value=now,
+            create=True,
+        ):
+            value = sensor.native_value
+            attrs = sensor.extra_state_attributes
+
+        assert value is None
+        assert attrs == {}
 
     def test_alert_sensor_with_alerts_native_value_is_count(self):
         """MelCollecteAlertSensor retourne le nombre d'alertes."""
