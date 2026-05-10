@@ -42,7 +42,9 @@ class MelCollecteCalendar(CalendarEntity):
     @property
     def event(self) -> CalendarEvent | None:
         now = dt_util.utcnow()
-        for evt in self._coordinator.data["events"]:
+        data = self._coordinator.data or {}
+        events = data.get("events", [])
+        for evt in events:
             if evt["start"] >= now:
                 friendly = (
                     evt.get("garbage_types_friendly") or evt.get("garbage_types") or []
@@ -61,7 +63,8 @@ class MelCollecteCalendar(CalendarEntity):
         events = []
         start_date = dt_util.as_utc(start_date)
         end_date = dt_util.as_utc(end_date)
-        for evt in self._coordinator.data["events"]:
+        data = self._coordinator.data or {}
+        for evt in data.get("events", []):
             if evt["end"] < start_date or evt["start"] > end_date:
                 continue
             friendly = (
@@ -79,10 +82,12 @@ class MelCollecteCalendar(CalendarEntity):
 
     @property
     def extra_state_attributes(self):
+        data = self._coordinator.data or {}
         return {
-            "derniere_mise_a_jour": self._coordinator.data.get("fetched_at"),
-            "nombre_evenements": len(self._coordinator.data["events"]),
+            "derniere_mise_a_jour": data.get("fetched_at"),
+            "nombre_evenements": len(data.get("events", [])),
         }
 
     async def async_update(self):
-        await self._coordinator.async_request_refresh()
+        if self._coordinator.last_update_success:
+            await self._coordinator.async_request_refresh()

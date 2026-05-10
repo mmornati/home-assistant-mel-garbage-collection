@@ -32,9 +32,11 @@ def parse_schedule(
     weeks = None
     interval = 1
     if week_info:
-        week_start = int(week_info.group(1))
-        week_end = int(week_info.group(2))
-        interval = int(week_info.group(3) or 1)
+        week_start = max(1, min(53, int(week_info.group(1))))
+        week_end = max(1, min(53, int(week_info.group(2))))
+        interval = max(1, int(week_info.group(3) or 1))
+        if week_start > week_end:
+            week_start, week_end = week_end, week_start
         weeks = (week_start, week_end, interval)
 
     day_token = next(
@@ -57,10 +59,9 @@ def parse_schedule(
         if current.weekday() == weekday and _week_matches(
             current.isocalendar()[1], weeks
         ):
-            occ_start = datetime.combine(
-                current.date(), start_time, tzinfo=start.tzinfo
-            )
-            occ_end = datetime.combine(current.date(), end_time, tzinfo=end.tzinfo)
+            tz = start.tzinfo
+            occ_start = datetime.combine(current.date(), start_time, tzinfo=tz)
+            occ_end = datetime.combine(current.date(), end_time, tzinfo=tz)
             if occ_end <= occ_start:
                 occ_end += timedelta(days=1)
             if occ_end >= start:
@@ -80,4 +81,6 @@ def _week_matches(week_number: int, weeks: tuple[int, int, int] | None) -> bool:
     week_start, week_end, interval = weeks
     if week_number < week_start or week_number > week_end:
         return False
+    if week_start > week_end:
+        return True
     return (week_number - week_start) % interval == 0

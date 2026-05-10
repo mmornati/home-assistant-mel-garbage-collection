@@ -16,13 +16,16 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Créer les capteurs."""
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
 
+    data = coordinator.data or {}
+    collections = data.get("collections", [])
+
     entities: list[SensorEntity] = [
         MelCollecteNextSensor(coordinator, entry),
         MelCollecteAlertSensor(coordinator, entry),
     ]
 
     seen_types: set[str] = set()
-    for collection in coordinator.data["collections"]:
+    for collection in collections:
         for garbage_type in collection.get("garbage_types", []):
             if garbage_type in seen_types:
                 continue
@@ -51,7 +54,8 @@ class MelCollecteBaseSensor(SensorEntity):
         )
 
     async def async_update(self):
-        await self._coordinator.async_request_refresh()
+        if self._coordinator.last_update_success:
+            await self._coordinator.async_request_refresh()
 
 
 class MelCollecteNextSensor(MelCollecteBaseSensor):
@@ -85,7 +89,8 @@ class MelCollecteNextSensor(MelCollecteBaseSensor):
 
     def _next_event(self):
         now = dt_util.utcnow()
-        for event in self._coordinator.data["events"]:
+        data = self._coordinator.data or {}
+        for event in data.get("events", []):
             if event["start"] >= now:
                 return event
         return None
@@ -124,7 +129,8 @@ class MelCollecteTypeSensor(MelCollecteBaseSensor):
 
     def _next_event_for_type(self):
         now = dt_util.utcnow()
-        for event in self._coordinator.data["events"]:
+        data = self._coordinator.data or {}
+        for event in data.get("events", []):
             if event["start"] >= now and self._type in event["garbage_types"]:
                 return event
         return None
@@ -169,4 +175,3 @@ class MelCollecteAlertSensor(MelCollecteBaseSensor):
             "last_alert_type": alerts[0].get("alert_type") if alerts else None,
             "last_alert_message": alerts[0].get("blurb") if alerts else None,
         }
-
