@@ -101,7 +101,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         f"{DOMAIN}.{EVENT_COLLECTION_UPCOMING}", payload
                     )
 
-    entry.async_on_unload(coordinator.async_add_listener(_async_fire_events))
+    entry.async_on_unload(
+        coordinator.async_add_listener(
+            lambda: hass.async_create_task(_async_fire_events())
+        )
+    )
 
     async def async_handle_refresh_service(call):
         """Force refresh of all or specific entries."""

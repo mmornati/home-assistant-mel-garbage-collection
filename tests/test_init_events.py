@@ -50,6 +50,8 @@ async def test_async_setup_entry_registers_services_and_fires_events():
 
         mock_api_cls.return_value = MagicMock()
 
+        hass.async_create_task = AsyncMock()
+
         result = await async_setup_entry(hass, entry)
         assert result is True
 
@@ -80,6 +82,10 @@ async def test_async_setup_entry_registers_services_and_fires_events():
         else:
             listener()
 
+        if hass.async_create_task.called:
+            scheduled_coro = hass.async_create_task.call_args[0][0]
+            await scheduled_coro
+
         assert hass.bus.async_fire.call_count == 1
         args, kwargs = hass.bus.async_fire.call_args
         assert args[0] == f"{DOMAIN}.{EVENT_COLLECTION_UPCOMING}"
@@ -87,10 +93,15 @@ async def test_async_setup_entry_registers_services_and_fires_events():
         assert args[1]["hours_until"] == 12
 
         # Call it again to test that it doesn't fire twice
+        hass.async_create_task.reset_mock()
         if inspect.iscoroutinefunction(listener):
             await listener()
         else:
             listener()
+
+        if hass.async_create_task.called:
+            scheduled_coro = hass.async_create_task.call_args[0][0]
+            await scheduled_coro
 
         assert hass.bus.async_fire.call_count == 1
 
