@@ -11,7 +11,13 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .api import MelCollecteAPI
-from .const import LOOKAHEAD_DAYS, UPDATE_INTERVAL_DAYS, alert_label, garbage_label
+from .const import (
+    DEFAULT_LOOKAHEAD_DAYS,
+    DEFAULT_UPDATE_INTERVAL,
+    DEFAULT_VISIBLE_TYPES,
+    alert_label,
+    garbage_label,
+)
 from .parser import parse_schedule
 
 LOGGER = logging.getLogger(__name__)
@@ -29,18 +35,25 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         instance_id: str,
         lat: float | None,
         lon: float | None,
+        update_interval_days: int = DEFAULT_UPDATE_INTERVAL,
+        lookahead_days: int = DEFAULT_LOOKAHEAD_DAYS,
+        visible_types: list[str] | None = None,
     ) -> None:
         super().__init__(
             hass,
             LOGGER,
             name="MEL Collecte Coordinator",
-            update_interval=timedelta(days=UPDATE_INTERVAL_DAYS),
+            update_interval=timedelta(days=update_interval_days),
         )
         self.api = api
         self.address = address
         self.instance_id = instance_id
         self.lat = lat
         self.lon = lon
+        self._lookahead_days = lookahead_days
+        self._visible_types = (
+            visible_types if visible_types is not None else DEFAULT_VISIBLE_TYPES
+        )
         self._address_payload: dict[str, Any] | None = None
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -83,11 +96,17 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             raise UpdateFailed(err) from err
 
         now = dt_util.utcnow()
-        horizon = now + timedelta(days=LOOKAHEAD_DAYS)
+        horizon = now + timedelta(days=self._lookahead_days)
         events: list[dict[str, Any]] = []
         parsed_collections: list[dict[str, Any]] = []
 
         for collection in collections:
+            collection_types = collection.get("metas", {}).get("garbage_types", [])
+            if self._visible_types and all(
+                t not in self._visible_types for t in collection_types
+            ):
+                continue
+
             schedules = collection.get("schedules", [])
             occurrences = []
             for schedule in schedules:
@@ -96,18 +115,13 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     continue
                 occurrences.extend(parse_schedule(opening_hours, now, horizon))
 
-            friendly_types = [
-                garbage_label(code)
-                for code in collection.get("metas", {}).get("garbage_types", [])
-            ]
+            friendly_types = [garbage_label(code) for code in collection_types]
 
             parsed_collections.append(
                 {
                     "id": collection.get("id"),
                     "name": collection.get("name"),
-                    "garbage_types": collection.get("metas", {}).get(
-                        "garbage_types", []
-                    ),
+                    "garbage_types": collection_types,
                     "garbage_types_friendly": friendly_types,
                     "collection_mode": collection.get("metas", {}).get(
                         "collection_mode"
@@ -122,22 +136,27 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 }
             )
 
-            events.extend(
-                {
-                    "collection_id": collection.get("id"),
-                    "garbage_types": collection.get("metas", {}).get(
-                        "garbage_types", []
-                    ),
-                    "garbage_types_friendly": friendly_types,
-                    "collection_mode": collection.get("metas", {}).get(
-                        "collection_mode"
-                    ),
-                    "start": dt_util.as_utc(occurrence["start"]),
-                    "end": dt_util.as_utc(occurrence["end"]),
-                    "name": collection.get("name"),
-                }
-                for occurrence in occurrences
-            )
+            for occurrence in occurrences:
+                event_types = collection_types
+                if self._visible_types:
+                    event_types = [t for t in event_types if t in self._visible_types]
+                if not event_types:
+                    continue
+
+                friendly_event_types = [garbage_label(code) for code in event_types]
+                events.append(
+                    {
+                        "collection_id": collection.get("id"),
+                        "garbage_types": event_types,
+                        "garbage_types_friendly": friendly_event_types,
+                        "collection_mode": collection.get("metas", {}).get(
+                            "collection_mode"
+                        ),
+                        "start": dt_util.as_utc(occurrence["start"]),
+                        "end": dt_util.as_utc(occurrence["end"]),
+                        "name": collection.get("name"),
+                    }
+                )
 
         events.sort(key=lambda item: item["start"])
 

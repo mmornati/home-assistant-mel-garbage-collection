@@ -8,8 +8,9 @@ SEARCH_URL = "https://api.publidata.io/v2/search"
 
 DEFAULT_INSTANCE_ID = "876"  # Métropole Européenne de Lille
 
-UPDATE_INTERVAL_DAYS = 7
-LOOKAHEAD_DAYS = 90
+DEFAULT_UPDATE_INTERVAL = 7
+DEFAULT_LOOKAHEAD_DAYS = 90
+DEFAULT_VISIBLE_TYPES: list[str] = []
 
 GARBAGE_TYPES_LABELS = {
     "omr": "Ordures ménagères résiduelles",

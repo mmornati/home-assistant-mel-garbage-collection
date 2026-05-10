@@ -7,7 +7,13 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import callback
 
-from .const import DEFAULT_INSTANCE_ID, DOMAIN
+from .const import (
+    DEFAULT_INSTANCE_ID,
+    DEFAULT_LOOKAHEAD_DAYS,
+    DEFAULT_UPDATE_INTERVAL,
+    DEFAULT_VISIBLE_TYPES,
+    DOMAIN,
+)
 
 
 class MelCollecteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
@@ -40,10 +46,42 @@ class MelCollecteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: 
 
 
 class MelCollecteOptionsFlow(config_entries.OptionsFlow):
-    """Permet d'ajuster quelques paramètres (future extension)."""
+    """Permet d'ajuster les paramètres de l'intégration."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         self.config_entry = config_entry
 
     async def async_step_init(self, user_input: dict | None = None):
-        return self.async_abort(reason="not_supported")
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        "update_interval",
+                        default=self.config_entry.options.get(
+                            "update_interval", DEFAULT_UPDATE_INTERVAL
+                        ),
+                    ): int,
+                    vol.Optional(
+                        "lookahead_days",
+                        default=self.config_entry.options.get(
+                            "lookahead_days", DEFAULT_LOOKAHEAD_DAYS
+                        ),
+                    ): int,
+                    vol.Optional(
+                        "visible_types",
+                        default=self.config_entry.options.get(
+                            "visible_types", DEFAULT_VISIBLE_TYPES
+                        ),
+                    ): vol.All(list, [str]),
+                }
+            ),
+            description_placeholders={
+                "update_interval_desc": "Intervalle de mise à jour en jours (1-30)",
+                "lookahead_days_desc": "Fenêtre de prévision en jours (7-365)",
+                "visible_types_desc": "Types de déchets à afficher (laisser vide pour tous)",
+            },
+        )
