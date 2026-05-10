@@ -35,6 +35,7 @@ Cette documentation explique comment installer et configurer le composant person
 2. Rechercher **"MEL Collecte des déchets"**.
 3. Saisir l'adresse postale (ex. `19 rue Exemple, 59000 Lille`).
    L'intégration utilise l'API `https://api.publidata.io/v2/geocoder` pour récupérer automatiquement l'ID adresse, la latitude et la longitude.
+   L'adresse est validée en temps réel : si elle est introuvable ou si elle ne se situe pas dans la zone desservie par la Métropole Européenne de Lille, un message d'erreur explicite est affiché avant la création de l'entrée.
 4. Valider : les entités sont créées après le premier rafraîchissement (quelques secondes).
 
 ---

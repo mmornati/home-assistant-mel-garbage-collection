@@ -20,8 +20,18 @@ def _ensure_module(name: str) -> types.ModuleType:
 # Crée les modules racine
 ha = _ensure_module("homeassistant")
 
+# ----- homeassistant.const ------------------------------------------------
+const_module = _ensure_module("homeassistant.const")
+const_module.CONF_ADDRESS = "address"
+ha.const = const_module
+
 # ----- homeassistant.core -------------------------------------------------
 core = _ensure_module("homeassistant.core")
+
+
+def callback(func):
+    """Simple callback decorator stub."""
+    return func
 
 
 class HomeAssistant:
@@ -31,6 +41,7 @@ class HomeAssistant:
         self.loop = loop
 
 
+core.callback = callback
 core.HomeAssistant = HomeAssistant
 ha.core = core
 
@@ -45,7 +56,51 @@ class ConfigEntry:  # pragma: no cover - stub simple
         self.__dict__.update(kwargs)
 
 
+class ConfigFlowMeta(type):
+    """Metaclass that accepts domain keyword."""
+
+    def __new__(mcs, name, bases, namespace, domain=None, **kwargs):
+        return super().__new__(mcs, name, bases, namespace)
+
+    def __init__(cls, name, bases, namespace, domain=None, **kwargs):
+        super().__init__(name, bases, namespace)
+
+
+class _ConfigFlowBase(metaclass=ConfigFlowMeta, domain=None):
+    VERSION = 1
+
+    def __init__(self, hass=None, **kwargs):
+        self.hass = hass
+
+    async def async_step_user(self, user_input=None):
+        return None
+
+    def async_show_form(self, **kwargs):
+        return {"type": "form", **kwargs}
+
+    def async_create_entry(self, **kwargs):
+        return {"type": "create_entry", **kwargs}
+
+    def async_abort(self, **kwargs):
+        return {"type": "abort", **kwargs}
+
+    async def async_set_unique_id(self, unique_id):
+        pass
+
+    def _abort_if_unique_id_configured(self):
+        pass
+
+    @staticmethod
+    def async_get_options_flow(config_entry):
+        return None
+
+
+ConfigFlow = _ConfigFlowBase
+
+
 config_entries.ConfigEntry = ConfigEntry
+config_entries.ConfigFlow = ConfigFlow
+config_entries.OptionsFlowWithConfigEntry = type("OptionsFlowWithConfigEntry", (), {})
 ha.config_entries = config_entries
 
 # ----- homeassistant.helpers.entity ---------------------------------------
@@ -238,10 +293,15 @@ sys.modules["homeassistant.util.dt"] = dt_module
 aiohttp_module = types.ModuleType("aiohttp")
 
 
+class ClientError(Exception):
+    """Simulates aiohttp.ClientError."""
+
+
 class ClientSession:  # pragma: no cover - simple stub
     """ClientSession factice pour éviter d'installer aiohttp."""
 
 
+aiohttp_module.ClientError = ClientError
 aiohttp_module.ClientSession = ClientSession
 sys.modules["aiohttp"] = aiohttp_module
 
