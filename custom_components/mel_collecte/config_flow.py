@@ -43,13 +43,11 @@ class MelCollecteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: 
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: config_entries.ConfigEntry):
-        return MelCollecteOptionsFlow(config_entry)
+        return MelCollecteOptionsFlow()
 
 
-class MelCollecteOptionsFlow(config_entries.OptionsFlow):
+class MelCollecteOptionsFlow(config_entries.OptionsFlowWithConfigEntry):
     """Permet d'ajuster les paramètres de l'intégration."""
-
-    pass
 
     async def async_step_init(self, user_input: dict | None = None):
         if user_input is not None:
