@@ -23,6 +23,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     entities: list[SensorEntity] = [
         MelCollecteNextSensor(coordinator, entry),
+        MelCollecteNextCollectionDaysSensor(coordinator, entry),
         MelCollecteAlertSensor(coordinator, entry),
     ]
 
@@ -89,6 +90,43 @@ class MelCollecteNextSensor(MelCollecteBaseSensor):
             "mode": event["collection_mode"],
             "debut": event["start"].isoformat(),
             "fin": event["end"].isoformat(),
+        }
+
+    def _next_event(self):
+        now = dt_util.utcnow()
+        data = self._coordinator.data or {}
+        for event in data.get("events", []):
+            if event["start"] >= now:
+                return event
+        return None
+
+
+class MelCollecteNextCollectionDaysSensor(MelCollecteBaseSensor):
+    """Capteur indiquant le nombre de jours avant la prochaine collecte."""
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.entry_id}_days_until_next_collection"
+        self._attr_name = "Jours avant prochaine collecte"
+        self._attr_icon = "mdi:calendar-clock"
+        self._attr_native_unit_of_measurement = "days"
+
+    @property
+    def native_value(self):
+        event = self._next_event()
+        if event:
+            delta = event["start"].date() - dt_util.now().date()
+            return delta.days
+        return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        event = self._next_event()
+        if not event:
+            return {}
+        return {
+            "next_collection_date": event["start"].isoformat(),
+            "next_collection_type": event.get("garbage_types_friendly", "Inconnu"),
         }
 
     def _next_event(self):

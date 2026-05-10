@@ -6,6 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.typing import ConfigType
+import voluptuous as vol
 
 try:  # pragma: no cover - fallback pour exécution hors HA (tests)
     from homeassistant.helpers import aiohttp_client
@@ -67,6 +68,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DOMAIN][entry.entry_id] = {DATA_COORDINATOR: coordinator}
 
+    async def async_handle_refresh_service(call):
+        """Force refresh of all or specific entries."""
+        entry_id = call.data.get("entry_id")
+        if entry_id:
+            if entry_id in hass.data.get(DOMAIN, {}):
+                coord = hass.data[DOMAIN][entry_id].get(DATA_COORDINATOR)
+                if coord:
+                    await coord.async_request_refresh()
+        else:
+            for instance_id in hass.data.get(DOMAIN, {}):
+                coord = hass.data[DOMAIN][instance_id].get(DATA_COORDINATOR)
+                if coord:
+                    await coord.async_request_refresh()
+
+    hass.services.async_register(
+        DOMAIN,
+        "force_refresh",
+        async_handle_refresh_service,
+        schema=vol.Schema({vol.Optional("entry_id"): str}),
+    )
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
@@ -76,4 +98,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
+        if not hass.data[DOMAIN]:
+            hass.services.async_remove(DOMAIN, "force_refresh")
     return unload_ok
