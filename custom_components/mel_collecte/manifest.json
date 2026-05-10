@@ -13,10 +13,6 @@
     "async-timeout>=3.0,<5.0"
   ],
   "quality_scale": "platinum",
-  "domains": [
-    "calendar",
-    "sensor"
-  ],
   "version": "1.2.0"
 }
 
