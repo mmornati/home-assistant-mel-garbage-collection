@@ -117,7 +117,7 @@ class TestCalendarEdgeCases:
         assert event is None
 
     def test_event_property_fallback_to_garbage_types(self):
-        """event utilise garbage_types si garbage_types_friendly est absent."""
+        """event utilise garbage_types si garbage_types_friendly est absent (avec traduction)."""
         now = datetime(2025, 1, 1, tzinfo=timezone.utc)
         events = [
             {
@@ -140,7 +140,7 @@ class TestCalendarEdgeCases:
             event = calendar.event
 
         assert event is not None
-        assert "omr" in event.summary
+        assert "Ordures ménagères résiduelles" in event.summary
 
     def test_event_property_fallback_to_name(self):
         """event utilise le nom si ni garbage_types_friendly ni garbage_types."""

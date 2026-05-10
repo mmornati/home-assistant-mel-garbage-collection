@@ -2,22 +2,45 @@
   "config": {
     "step": {
       "user": {
-        "title": "Collectes MEL",
-        "description": "Saisissez l'adresse à surveiller.",
+        "title": "MEL Waste Collection",
+        "description": "Enter the address to monitor.",
         "data": {
-          "address": "Adresse complète",
-          "latitude": "Latitude (optionnel)",
-          "longitude": "Longitude (optionnel)"
+          "address": "Full address",
+          "latitude": "Latitude (optional)",
+          "longitude": "Longitude (optional)"
         }
       }
     },
     "error": {
-      "cannot_connect": "Connexion impossible.",
-      "address_not_found": "Adresse introuvable. Vérifiez l'orthographe."
+      "cannot_connect": "Connection failed.",
+      "address_not_found": "Address not found. Check spelling.",
+      "outside_coverage": "This address is not served by the Metropolitan European Lille."
     },
     "abort": {
-      "already_configured": "Cette adresse est déjà configurée.",
-      "outside_coverage": "Cette adresse n'est pas desservie par la Métropole Européenne de Lille."
+      "already_configured": "This address is already configured."
+    }
+  },
+  "fr": {
+    "config": {
+      "step": {
+        "user": {
+          "title": "Collectes MEL",
+          "description": "Saisissez l'adresse à surveiller.",
+          "data": {
+            "address": "Adresse complète",
+            "latitude": "Latitude (optionnel)",
+            "longitude": "Longitude (optionnel)"
+          }
+        }
+      },
+      "error": {
+        "cannot_connect": "Connexion impossible.",
+        "address_not_found": "Adresse introuvable. Vérifiez l'orthographe.",
+        "outside_coverage": "Cette adresse n'est pas desservie par la Métropole Européenne de Lille."
+      },
+      "abort": {
+        "already_configured": "Cette adresse est déjà configurée."
+      }
     }
   }
 }

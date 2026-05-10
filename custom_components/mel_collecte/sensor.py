@@ -67,10 +67,11 @@ class MelCollecteBaseSensor(SensorEntity):
 class MelCollecteNextSensor(MelCollecteBaseSensor):
     """Capteur indiquant la prochaine collecte."""
 
+    _attr_translation_key = "prochaine_collecte"
+
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
         self._attr_unique_id = f"{entry.entry_id}_next_collection"
-        self._attr_name = "Prochaine collecte"
 
     @property
     def native_value(self):
@@ -105,10 +106,11 @@ class MelCollecteNextSensor(MelCollecteBaseSensor):
 class MelCollecteNextCollectionDaysSensor(MelCollecteBaseSensor):
     """Capteur indiquant le nombre de jours avant la prochaine collecte."""
 
+    _attr_translation_key = "jours_avant_prochaine_collecte"
+
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
         self._attr_unique_id = f"{entry.entry_id}_days_until_next_collection"
-        self._attr_name = "Jours avant prochaine collecte"
         self._attr_icon = "mdi:calendar-clock"
         self._attr_native_unit_of_measurement = "days"
 
@@ -146,8 +148,7 @@ class MelCollecteTypeSensor(MelCollecteBaseSensor):
         super().__init__(coordinator, entry)
         self._type = garbage_type
         self._attr_unique_id = f"{entry.entry_id}_type_{garbage_type}"
-        self._label = garbage_label(garbage_type)
-        self._attr_name = f"Collecte {self._label}"
+        self._attr_name = f"Collecte {garbage_label(garbage_type)}"
 
     @property
     def native_value(self):
@@ -186,8 +187,7 @@ class MelCollecteTypeDaysSensor(MelCollecteBaseSensor):
         super().__init__(coordinator, entry)
         self._type = garbage_type
         self._attr_unique_id = f"{entry.entry_id}_type_{garbage_type}_days"
-        self._label = garbage_label(garbage_type)
-        self._attr_name = f"Collecte {self._label} dans"
+        self._attr_name = f"Collecte {garbage_label(garbage_type)} dans"
         self._attr_native_unit_of_measurement = "jours"
         self._attr_icon = "mdi:calendar-clock"
 
@@ -207,7 +207,7 @@ class MelCollecteTypeDaysSensor(MelCollecteBaseSensor):
         return {
             "prochaine_collecte": event["start"].isoformat(),
             "type": self._type,
-            "type_libelle": self._label,
+            "type_libelle": garbage_label(self._type),
         }
 
     def _next_event_for_type(self):
@@ -222,10 +222,11 @@ class MelCollecteTypeDaysSensor(MelCollecteBaseSensor):
 class MelCollecteAlertSensor(MelCollecteBaseSensor):
     """Capteur pour les alertes du service de collecte."""
 
+    _attr_translation_key = "alertes_collecte"
+
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
         self._attr_unique_id = f"{entry.entry_id}_alerts"
-        self._attr_name = "Alertes collecte"
         self._attr_icon = "mdi:alert-circle"
 
     @property
