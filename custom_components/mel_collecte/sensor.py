@@ -19,6 +19,8 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     data = coordinator.data or {}
     collections = data.get("collections", [])
 
+    visible_types = coordinator._visible_types
+
     entities: list[SensorEntity] = [
         MelCollecteNextSensor(coordinator, entry),
         MelCollecteAlertSensor(coordinator, entry),
@@ -28,6 +30,8 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     for collection in collections:
         for garbage_type in collection.get("garbage_types", []):
             if garbage_type in seen_types:
+                continue
+            if visible_types and garbage_type not in visible_types:
                 continue
             seen_types.add(garbage_type)
             entities.append(MelCollecteTypeSensor(coordinator, entry, garbage_type))

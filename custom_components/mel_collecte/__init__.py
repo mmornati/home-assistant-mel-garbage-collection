@@ -21,7 +21,13 @@ except ImportError:  # pragma: no cover
 
 
 from .api import MelCollecteAPI
-from .const import DATA_COORDINATOR, DOMAIN
+from .const import (
+    DATA_COORDINATOR,
+    DEFAULT_LOOKAHEAD_DAYS,
+    DEFAULT_UPDATE_INTERVAL,
+    DEFAULT_VISIBLE_TYPES,
+    DOMAIN,
+)
 from .coordinator import MelCollecteCoordinator
 
 PLATFORMS: list[str] = ["calendar", "sensor"]
@@ -41,6 +47,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = aiohttp_client.async_get_clientsession(hass)
     api = MelCollecteAPI(session)
 
+    options = entry.options or {}
+    update_interval_days = options.get("update_interval", DEFAULT_UPDATE_INTERVAL)
+    lookahead_days = options.get("lookahead_days", DEFAULT_LOOKAHEAD_DAYS)
+    visible_types = options.get("visible_types", DEFAULT_VISIBLE_TYPES)
+
     coordinator = MelCollecteCoordinator(
         hass,
         api,
@@ -48,6 +59,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         instance_id=entry.data["instance_id"],
         lat=entry.data.get("lat"),
         lon=entry.data.get("lon"),
+        update_interval_days=update_interval_days,
+        lookahead_days=lookahead_days,
+        visible_types=visible_types if visible_types else None,
     )
     await coordinator.async_config_entry_first_refresh()
 
