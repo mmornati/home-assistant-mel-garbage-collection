@@ -1,5 +1,4 @@
 # MEL Collecte des déchets
-## MEL Waste Collection
 
 ![Version](https://img.shields.io/badge/version-1.2.0-blue)
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange)](https://github.com/hacs/integration)
@@ -8,26 +7,18 @@
 [![Validate](https://github.com/mmornati/home-assistant-mel-garbage-collection/actions/workflows/validate.yaml/badge.svg)](https://github.com/mmornati/home-assistant-mel-garbage-collection/actions/workflows/validate.yaml)
 [![codecov](https://codecov.io/gh/mmornati/home-assistant-mel-garbage-collection/branch/main/graph/badge.svg)](https://codecov.io/gh/mmornati/home-assistant-mel-garbage-collection)
 
----
-
-## English
-
 > **Ne ratez plus jamais une collecte !** Ce composant personnalisé récupère automatiquement les jours de passage pour la Métropole Européenne de Lille et les expose dans Home Assistant — calendriers, capteurs et alertes en un seul plugin.
 
 ---
 
-## English
+## Fonctionnalités
 
-> **Never miss a collection again!** This custom component automatically retrieves collection days for the European Metropolis of Lille and exposes them in Home Assistant — calendars, sensors, and alerts in a single plugin.
-
-### Features
-
-- **Calendar Integration**: `calendar.collectes_des_dechets` with all upcoming collections (90 days)
-- **Smart Sensors**: Next collection sensor with detailed attributes, per-type collection sensors, and days-until countdown
-- **Alert System**: Real-time alerts from the collection service
-- **Bilingual**: Full French and English localization
-- **Event-Driven Automations**: Native `mel_collecte.collection_upcoming` event for easy automations
-- **Trash Card Compatible**: Works with the popular Trash Card community card
+- **Intégration calendrier** : `calendar.collectes_des_dechets` avec toutes les collectes à venir (90 jours)
+- **Capteurs intelligents** : Capteur de prochaine collecte avec attributs détaillés, capteurs par type de déchet, et compte à rebours
+- **Système d'alertes** : Alertes en temps réel du service de collecte
+- **Bilingue** : Localisation complète en français et anglais
+- **Automatisations par événements** : Événement natif `mel_collecte.collection_upcoming` pour des automatisations simples
+- **Compatible Trash Card** : Fonctionne avec la carte communautaire Trash Card
 
 ---
 
@@ -199,7 +190,13 @@ Le parser (`parser.py`) convertit les chaînes `opening_hours` (ex: `week 1-52/2
 
 **Horaires incorrects ?** Les données viennent de Publidata. Ouvrez une issue si un format est mal parsé.
 
-**Comment_forcer un rafraîchissement ?** Vous pouvez appeler le service `mel_collecte.force_refresh` (disponible dans *Outils de développement → Services*) pour rafraîchir les données immédiatement.
+**Comment forcer un rafraîchissement ?** Vous pouvez appeler le service `mel_collecte.force_refresh` (disponible dans *Outils de développement → Services*) pour rafraîchir les données immédiatement.
+
+---
+
+## Documentation en anglais
+
+Pour la documentation complète en anglais, consultez [`docs/en/user_guide.md`](docs/en/user_guide.md).
 
 ---
 
