@@ -301,7 +301,20 @@ class ClientSession:  # pragma: no cover - simple stub
     """ClientSession factice pour éviter d'installer aiohttp."""
 
 
+class ClientConnectorError(ClientError):
+    """Simulates aiohttp.ClientConnectorError."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(str(args[0]) if args else "connection error")
+
+
+class ServerDisconnectedError(ClientError):
+    """Simulates aiohttp.ServerDisconnectedError."""
+
+
 aiohttp_module.ClientError = ClientError
+aiohttp_module.ClientConnectorError = ClientConnectorError
+aiohttp_module.ServerDisconnectedError = ServerDisconnectedError
 aiohttp_module.ClientSession = ClientSession
 sys.modules["aiohttp"] = aiohttp_module
 

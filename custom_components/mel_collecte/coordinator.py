@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from homeassistant.core import HomeAssistant
@@ -55,6 +55,7 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             visible_types if visible_types is not None else DEFAULT_VISIBLE_TYPES
         )
         self._address_payload: dict[str, Any] | None = None
+        self._last_update_success: datetime | None = None
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
@@ -92,7 +93,10 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 address_id=address_id,
             )
         except Exception as err:
-            LOGGER.error("Erreur lors de la récupération des collectes: %s", err)
+            LOGGER.warning(
+                "Erreur lors de la récupération des collectes (le coordonnateur réessaiera) : %s",
+                err,
+            )
             raise UpdateFailed(err) from err
 
         now = dt_util.utcnow()
@@ -175,10 +179,13 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             for alert in alerts
         ]
 
+        self._last_update_success = datetime.now(timezone.utc)
+
         return {
             "address": self._address_payload,
             "collections": parsed_collections,
             "events": events,
             "alerts": parsed_alerts,
             "fetched_at": now.isoformat(),
+            "last_update_success": self._last_update_success.isoformat(),
         }
