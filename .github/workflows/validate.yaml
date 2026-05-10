@@ -29,6 +29,12 @@ jobs:
           manifest = json.loads(Path('custom_components/mel_collecte/manifest.json').read_text())
           requirements = set(manifest.get('requirements', []))
 
+          # Normalize requirement names (pip uses hyphens, imports use underscores)
+          # async-timeout -> async_timeout
+          normalized_reqs = set()
+          for req in requirements:
+              normalized_reqs.add(req.replace('-', '_').split('>')[0].split('<')[0].split('=')[0].strip())
+
           # Extract imports from Python files
           imports = set()
           for py_file in Path('custom_components/mel_collecte').rglob('*.py'):
@@ -43,10 +49,10 @@ jobs:
           external_modules = {'aiohttp', 'async_timeout', 'aiohttp_client'}
           used_external = imports & external_modules
 
-          missing = used_external - requirements
+          missing = used_external - normalized_reqs
           if missing:
               print(f'ERROR: Manifest missing requirements: {missing}')
-              print(f'Manifest requirements: {requirements}')
+              print(f'Normalized manifest requirements: {normalized_reqs}')
               print(f'Used external modules: {used_external}')
               exit(1)
           print('Manifest requirements validation passed')
