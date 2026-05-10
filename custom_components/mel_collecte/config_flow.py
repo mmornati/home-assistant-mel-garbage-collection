@@ -49,8 +49,7 @@ class MelCollecteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: 
 class MelCollecteOptionsFlow(config_entries.OptionsFlow):
     """Permet d'ajuster les paramètres de l'intégration."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        super().__init__(config_entry)
+    pass
 
     async def async_step_init(self, user_input: dict | None = None):
         if user_input is not None:
@@ -80,9 +79,4 @@ class MelCollecteOptionsFlow(config_entries.OptionsFlow):
                     ): cv.ensure_list(cv.string),
                 }
             ),
-            description_placeholders={
-                "update_interval_desc": "Intervalle de mise à jour en jours (1-30)",
-                "lookahead_days_desc": "Fenêtre de prévision en jours (7-365)",
-                "visible_types_desc": "Types de déchets à afficher (laisser vide pour tous)",
-            },
         )
