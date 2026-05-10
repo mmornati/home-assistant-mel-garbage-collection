@@ -191,6 +191,153 @@ class TestCalendarEdgeCases:
         assert attrs["nombre_evenements"] == 1
 
 
+class TestCalendarTypeFiltering:
+    """Tests du filtrage par type de déchet dans le calendrier (issue #15)."""
+
+    def _make_events(self, now):
+        return [
+            {
+                "collection_id": "col_omr",
+                "garbage_types": ["omr"],
+                "garbage_types_friendly": ["Ordures ménagères résiduelles"],
+                "collection_mode": "door",
+                "start": now + timedelta(days=1),
+                "end": now + timedelta(days=1, hours=2),
+                "name": "Collecte OMR",
+            },
+            {
+                "collection_id": "col_dv",
+                "garbage_types": ["dv"],
+                "garbage_types_friendly": ["Déchets verts"],
+                "collection_mode": "door",
+                "start": now + timedelta(days=2),
+                "end": now + timedelta(days=2, hours=2),
+                "name": "Collecte DV",
+            },
+        ]
+
+    def test_attr_has_time_is_true(self):
+        """_attr_has_time doit être True pour améliorer le rendu dans la carte calendrier."""
+        coordinator = DummyCoordinator([], [])
+        entry = SimpleNamespace(entry_id="test")
+        calendar = MelCollecteCalendar(coordinator, entry)
+        assert calendar._attr_has_time is True
+
+    def test_event_property_no_filter_returns_first_future(self):
+        """Sans filtre, event retourne le premier événement futur (comportement inchangé)."""
+        now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        events = self._make_events(now)
+        coordinator = DummyCoordinator(events, [])
+        entry = SimpleNamespace(entry_id="test")
+        calendar = MelCollecteCalendar(coordinator, entry)
+
+        with patch(
+            "custom_components.mel_collecte.calendar.dt_util.utcnow", return_value=now
+        ):
+            event = calendar.event
+
+        assert event is not None
+        assert "Ordures ménagères résiduelles" in event.summary
+
+    def test_event_property_filters_by_visible_types(self):
+        """event retourne le premier événement futur correspondant aux types visibles."""
+        now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        events = self._make_events(now)
+        coordinator = DummyCoordinator(events, [])
+        entry = SimpleNamespace(entry_id="test")
+        # Only show "dv" — OMR should be skipped
+        calendar = MelCollecteCalendar(coordinator, entry, visible_types=["dv"])
+
+        with patch(
+            "custom_components.mel_collecte.calendar.dt_util.utcnow", return_value=now
+        ):
+            event = calendar.event
+
+        assert event is not None
+        assert "Déchets verts" in event.summary
+
+    def test_event_property_returns_none_when_no_type_matches(self):
+        """event retourne None si aucun événement futur ne correspond au filtre."""
+        now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        events = self._make_events(now)
+        coordinator = DummyCoordinator(events, [])
+        entry = SimpleNamespace(entry_id="test")
+        # Filter for type that doesn't exist in events
+        calendar = MelCollecteCalendar(coordinator, entry, visible_types=["enc"])
+
+        with patch(
+            "custom_components.mel_collecte.calendar.dt_util.utcnow", return_value=now
+        ):
+            event = calendar.event
+
+        assert event is None
+
+    def test_async_get_events_no_filter_returns_all_in_range(self):
+        """Sans filtre, async_get_events retourne tous les événements dans la plage."""
+        import asyncio
+
+        now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        events = self._make_events(now)
+        coordinator = DummyCoordinator(events, [])
+        entry = SimpleNamespace(entry_id="test")
+        calendar = MelCollecteCalendar(coordinator, entry)
+
+        start = now
+        end = now + timedelta(days=30)
+        result = asyncio.run(calendar.async_get_events(None, start, end))
+
+        assert len(result) == 2
+
+    def test_async_get_events_filters_by_visible_types(self):
+        """async_get_events ne retourne que les événements correspondant aux types visibles."""
+        import asyncio
+
+        now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        events = self._make_events(now)
+        coordinator = DummyCoordinator(events, [])
+        entry = SimpleNamespace(entry_id="test")
+        calendar = MelCollecteCalendar(coordinator, entry, visible_types=["omr"])
+
+        start = now
+        end = now + timedelta(days=30)
+        result = asyncio.run(calendar.async_get_events(None, start, end))
+
+        assert len(result) == 1
+        assert "Ordures ménagères résiduelles" in result[0].summary
+
+    def test_async_get_events_excludes_all_when_no_type_matches(self):
+        """async_get_events retourne une liste vide si le filtre ne correspond à rien."""
+        import asyncio
+
+        now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        events = self._make_events(now)
+        coordinator = DummyCoordinator(events, [])
+        entry = SimpleNamespace(entry_id="test")
+        calendar = MelCollecteCalendar(coordinator, entry, visible_types=["enc"])
+
+        start = now
+        end = now + timedelta(days=30)
+        result = asyncio.run(calendar.async_get_events(None, start, end))
+
+        assert result == []
+
+    def test_visible_types_empty_list_shows_all(self):
+        """visible_types=[] (liste vide) désactive le filtre — tous les événements sont retournés."""
+        import asyncio
+
+        now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        events = self._make_events(now)
+        coordinator = DummyCoordinator(events, [])
+        entry = SimpleNamespace(entry_id="test")
+        calendar = MelCollecteCalendar(coordinator, entry, visible_types=[])
+
+        start = now
+        end = now + timedelta(days=30)
+        result = asyncio.run(calendar.async_get_events(None, start, end))
+
+        assert len(result) == 2
+
+
 class TestSensorEdgeCases:
     """Tests des cas limites des capteurs."""
 
