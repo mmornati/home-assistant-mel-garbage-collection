@@ -1,10 +1,33 @@
 # MEL Collecte des déchets
+## MEL Waste Collection
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange)](https://github.com/hacs/integration)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-41BDF5?logo=home-assistant&logoColor=white)
+[![Quality Scale: Platinum](https://img.shields.io/badge/quality%20scale-platinum-blue?style=flat-square)](https://developers.home-assistant.io/docs/integration_quality_scale_index)
+[![Validate](https://github.com/mmornati/home-assistant-mel-garbage-collection/actions/workflows/validate.yaml/badge.svg)](https://github.com/mmornati/home-assistant-mel-garbage-collection/actions/workflows/validate.yaml)
+[![codecov](https://codecov.io/gh/mmornati/home-assistant-mel-garbage-collection/branch/main/graph/badge.svg)](https://codecov.io/gh/mmornati/home-assistant-mel-garbage-collection)
+
+---
+
+## English
 
 > **Ne ratez plus jamais une collecte !** Ce composant personnalisé récupère automatiquement les jours de passage pour la Métropole Européenne de Lille et les expose dans Home Assistant — calendriers, capteurs et alertes en un seul plugin.
+
+---
+
+## English
+
+> **Never miss a collection again!** This custom component automatically retrieves collection days for the European Metropolis of Lille and exposes them in Home Assistant — calendars, sensors, and alerts in a single plugin.
+
+### Features
+
+- **Calendar Integration**: `calendar.collectes_des_dechets` with all upcoming collections (90 days)
+- **Smart Sensors**: Next collection sensor with detailed attributes, per-type collection sensors, and days-until countdown
+- **Alert System**: Real-time alerts from the collection service
+- **Bilingual**: Full French and English localization
+- **Event-Driven Automations**: Native `mel_collecte.collection_upcoming` event for easy automations
+- **Trash Card Compatible**: Works with the popular Trash Card community card
 
 ---
 

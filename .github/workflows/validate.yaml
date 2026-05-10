@@ -11,6 +11,47 @@ permissions:
   pull-requests: read
 
 jobs:
+  manifest_requirements:
+    name: Validate Manifest Requirements
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v5"
+
+      - name: Validate manifest requirements match imports
+        run: |
+          python3 -c "
+          import json
+          import re
+          from pathlib import Path
+
+          # Load manifest
+          manifest = json.loads(Path('custom_components/mel_collecte/manifest.json').read_text())
+          requirements = set(manifest.get('requirements', []))
+
+          # Extract imports from Python files
+          imports = set()
+          for py_file in Path('custom_components/mel_collecte').rglob('*.py'):
+              content = py_file.read_text()
+              # Find import statements
+              for match in re.findall(r'^(?:from|import)\s+([^\s;]+)', content, re.MULTILINE):
+                  module = match.split('.')[0]
+                  if module not in ('MelCollecte', 'mel_collecte'):
+                      imports.add(module)
+
+          # Check for external packages used directly (aiohttp, async_timeout, etc.)
+          external_modules = {'aiohttp', 'async_timeout', 'aiohttp_client'}
+          used_external = imports & external_modules
+
+          missing = used_external - requirements
+          if missing:
+              print(f'ERROR: Manifest missing requirements: {missing}')
+              print(f'Manifest requirements: {requirements}')
+              print(f'Used external modules: {used_external}')
+              exit(1)
+          print('Manifest requirements validation passed')
+          "
+
   validate:
     name: Validate with Hassfest
     runs-on: "ubuntu-latest"
