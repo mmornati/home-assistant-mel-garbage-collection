@@ -51,8 +51,14 @@ class MelCollecteOptionsFlow(config_entries.OptionsFlowWithConfigEntry):
     async def async_step_init(self, user_input: dict | None = None):
         if user_input is not None:
             visible_types = user_input.get("visible_types", "")
-            parsed_types = [t.strip() for t in visible_types.split(",") if t.strip()] if visible_types else []
-            return self.async_create_entry(data={**user_input, "visible_types": parsed_types})
+            parsed_types = (
+                [t.strip() for t in visible_types.split(",") if t.strip()]
+                if visible_types
+                else []
+            )
+            return self.async_create_entry(
+                data={**user_input, "visible_types": parsed_types}
+            )
 
         return self.async_show_form(
             step_id="init",
@@ -72,9 +78,11 @@ class MelCollecteOptionsFlow(config_entries.OptionsFlowWithConfigEntry):
                     ): int,
                     vol.Optional(
                         "visible_types",
-                        default=",".join(self.config_entry.options.get(
-                            "visible_types", DEFAULT_VISIBLE_TYPES
-                        )),
+                        default=",".join(
+                            self.config_entry.options.get(
+                                "visible_types", DEFAULT_VISIBLE_TYPES
+                            )
+                        ),
                     ): str,
                 }
             ),
