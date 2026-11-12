@@ -1,4 +1,29 @@
 {
+  "config": {
+    "step": {
+      "user": {
+        "title": "MEL Waste Collection",
+        "description": "Enter the address to monitor.",
+        "data": {
+          "address": "Full address",
+          "language": "Labels language"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "MEL Collection options",
+        "data": {
+          "update_interval": "Update interval (days)",
+          "lookahead_days": "Lookahead (days)",
+          "visible_types": "Visible types (comma-separated codes)",
+          "language": "Labels language"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "prochaine_collecte": {

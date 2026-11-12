@@ -9,7 +9,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.util import dt as dt_util
 
-from .const import DATA_COORDINATOR, DOMAIN, garbage_label
+from .const import (
+    DATA_COORDINATOR,
+    DOMAIN,
+    garbage_label,
+    get_entry_language,
+    ui_text,
+)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
@@ -50,12 +56,13 @@ class MelCollecteBaseSensor(SensorEntity):
     def __init__(self, coordinator, entry):
         self._coordinator = coordinator
         self._entry = entry
+        self._language = get_entry_language(entry)
 
     @property
     def device_info(self) -> DeviceInfo:
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.entry_id)},
-            name="Collectes MEL",
+            name=ui_text("device_name", self._language),
             manufacturer="Publidata / MEL",
         )
 
@@ -72,6 +79,7 @@ class MelCollecteNextSensor(MelCollecteBaseSensor):
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
         self._attr_unique_id = f"{entry.entry_id}_next_collection"
+        self._attr_name = ui_text("next_collection", self._language)
 
     @property
     def native_value(self):
@@ -112,7 +120,8 @@ class MelCollecteNextCollectionDaysSensor(MelCollecteBaseSensor):
         super().__init__(coordinator, entry)
         self._attr_unique_id = f"{entry.entry_id}_days_until_next_collection"
         self._attr_icon = "mdi:calendar-clock"
-        self._attr_native_unit_of_measurement = "days"
+        self._attr_name = ui_text("days_until_next_collection", self._language)
+        self._attr_native_unit_of_measurement = ui_text("days_unit", self._language)
 
     @property
     def native_value(self):
@@ -129,7 +138,9 @@ class MelCollecteNextCollectionDaysSensor(MelCollecteBaseSensor):
             return {}
         return {
             "next_collection_date": event["start"].isoformat(),
-            "next_collection_type": event.get("garbage_types_friendly", "Inconnu"),
+            "next_collection_type": event.get(
+                "garbage_types_friendly", ui_text("unknown", self._language)
+            ),
         }
 
     def _next_event(self):
@@ -148,7 +159,11 @@ class MelCollecteTypeSensor(MelCollecteBaseSensor):
         super().__init__(coordinator, entry)
         self._type = garbage_type
         self._attr_unique_id = f"{entry.entry_id}_type_{garbage_type}"
-        self._attr_name = f"Collecte {garbage_label(garbage_type)}"
+        self._attr_name = ui_text(
+            "type_collection",
+            self._language,
+            label=garbage_label(garbage_type, self._language),
+        )
 
     @property
     def native_value(self):
@@ -187,8 +202,12 @@ class MelCollecteTypeDaysSensor(MelCollecteBaseSensor):
         super().__init__(coordinator, entry)
         self._type = garbage_type
         self._attr_unique_id = f"{entry.entry_id}_type_{garbage_type}_days"
-        self._attr_name = f"Collecte {garbage_label(garbage_type)} dans"
-        self._attr_native_unit_of_measurement = "jours"
+        self._attr_name = ui_text(
+            "type_collection_in",
+            self._language,
+            label=garbage_label(garbage_type, self._language),
+        )
+        self._attr_native_unit_of_measurement = ui_text("days_unit", self._language)
         self._attr_icon = "mdi:calendar-clock"
 
     @property
@@ -207,7 +226,7 @@ class MelCollecteTypeDaysSensor(MelCollecteBaseSensor):
         return {
             "prochaine_collecte": event["start"].isoformat(),
             "type": self._type,
-            "type_libelle": garbage_label(self._type),
+            "type_libelle": garbage_label(self._type, self._language),
         }
 
     def _next_event_for_type(self):
@@ -227,6 +246,7 @@ class MelCollecteAlertSensor(MelCollecteBaseSensor):
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry)
         self._attr_unique_id = f"{entry.entry_id}_alerts"
+        self._attr_name = ui_text("collection_alerts", self._language)
         self._attr_icon = "mdi:alert-circle"
 
     @property

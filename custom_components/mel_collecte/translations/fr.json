@@ -1,4 +1,29 @@
 {
+  "config": {
+    "step": {
+      "user": {
+        "title": "Collecte des déchets MEL",
+        "description": "Saisissez l'adresse à surveiller.",
+        "data": {
+          "address": "Adresse complète",
+          "language": "Langue des libellés"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options MEL Collecte",
+        "data": {
+          "update_interval": "Intervalle de mise à jour (jours)",
+          "lookahead_days": "Horizon de prévision (jours)",
+          "visible_types": "Types visibles (codes séparés par des virgules)",
+          "language": "Langue des libellés"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "prochaine_collecte": {

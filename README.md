@@ -89,12 +89,12 @@ pattern:
 
 ### Internationalisation
 
-L'intégration est disponible en **français** et en **anglais**. Pour changer la langue de Home Assistant :
+L'intégration est disponible en **français** (par défaut) et en **anglais**. La langue des libellés (noms des capteurs, types de déchets, alertes, événements du calendrier, unités) se choisit dans la configuration de l'intégration :
 
-1. **Paramètres → Système → Générale** (ou **Paramètres → Tableau de bord → Langue** selon votre version)
-2. Modifiez la langue
+1. À l'ajout de l'adresse, champ **Langue des libellés** (français par défaut).
+2. Ensuite, **Paramètres → Appareils & services → MEL Collecte → Configurer** pour la modifier. L'intégration se recharge automatiquement.
 
-L'intégration affichera automatiquement toutes les entités, le flux de configuration et les événements de calendrier dans la langue configurée.
+Ce choix est indépendant de la langue de Home Assistant : une instance en anglais affiche donc les collectes en français tant que l'option n'est pas changée.
 
 ### Événements et Automatisations
 

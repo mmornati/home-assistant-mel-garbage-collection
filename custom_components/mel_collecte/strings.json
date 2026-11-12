@@ -7,7 +7,8 @@
         "data": {
           "address": "Full address",
           "latitude": "Latitude (optional)",
-          "longitude": "Longitude (optional)"
+          "longitude": "Longitude (optional)",
+          "language": "Labels language"
         }
       }
     },
@@ -18,6 +19,19 @@
     },
     "abort": {
       "already_configured": "This address is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "MEL Collection options",
+        "data": {
+          "update_interval": "Update interval (days)",
+          "lookahead_days": "Lookahead (days)",
+          "visible_types": "Visible types (comma-separated codes)",
+          "language": "Labels language"
+        }
+      }
     }
   }
 }
