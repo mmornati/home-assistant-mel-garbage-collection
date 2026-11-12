@@ -16,6 +16,7 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL,
     DEFAULT_VISIBLE_TYPES,
     DEFAULT_COLLECTION_OFFSET,
+    DEFAULT_LANGUAGE,
     alert_label,
     garbage_label,
 )
@@ -39,6 +40,7 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         update_interval_days: int = DEFAULT_UPDATE_INTERVAL,
         lookahead_days: int = DEFAULT_LOOKAHEAD_DAYS,
         visible_types: list[str] | None = None,
+        language: str = DEFAULT_LANGUAGE,
     ) -> None:
         super().__init__(
             hass,
@@ -52,6 +54,7 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.lat = lat
         self.lon = lon
         self._lookahead_days = lookahead_days
+        self.language = language
         self._visible_types = (
             visible_types if visible_types is not None else DEFAULT_VISIBLE_TYPES
         )
@@ -123,7 +126,9 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     continue
                 occurrences.extend(parse_schedule(opening_hours, now, horizon))
 
-            friendly_types = [garbage_label(code) for code in collection_types]
+            friendly_types = [
+                garbage_label(code, self.language) for code in collection_types
+            ]
 
             parsed_collections.append(
                 {
@@ -151,7 +156,9 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 if not event_types:
                     continue
 
-                friendly_event_types = [garbage_label(code) for code in event_types]
+                friendly_event_types = [
+                    garbage_label(code, self.language) for code in event_types
+                ]
                 events.append(
                     {
                         "collection_id": collection.get("id"),
@@ -174,7 +181,9 @@ class MelCollecteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "id": alert.get("id"),
                 "name": alert.get("name"),
                 "alert_type": alert.get("alert_type"),
-                "alert_type_friendly": alert_label(alert.get("alert_type", "")),
+                "alert_type_friendly": alert_label(
+                    alert.get("alert_type", ""), self.language
+                ),
                 "blurb": alert.get("blurb"),
                 "start_at": alert.get("start_at"),
                 "end_at": alert.get("end_at"),

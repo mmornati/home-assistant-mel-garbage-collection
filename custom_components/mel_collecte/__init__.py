@@ -30,6 +30,7 @@ from .const import (
     DEFAULT_VISIBLE_TYPES,
     DOMAIN,
     EVENT_COLLECTION_UPCOMING,
+    get_entry_language,
 )
 from .coordinator import MelCollecteCoordinator
 
@@ -65,6 +66,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         update_interval_days=update_interval_days,
         lookahead_days=lookahead_days,
         visible_types=visible_types if visible_types else None,
+        language=get_entry_language(entry),
     )
     await coordinator.async_config_entry_first_refresh()
 
@@ -155,8 +157,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ),
     )
 
+    entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+async def _async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Recharger l'intégration quand les options changent (ex. langue)."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

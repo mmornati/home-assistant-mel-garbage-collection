@@ -10,7 +10,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.util import dt as dt_util
 
-from .const import DATA_COORDINATOR, DOMAIN, garbage_label
+from .const import (
+    DATA_COORDINATOR,
+    DOMAIN,
+    garbage_label,
+    get_entry_language,
+    ui_text,
+)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
@@ -33,12 +39,14 @@ class MelCollecteCalendar(CalendarEntity):
         self._entry = entry
         self._visible_types = visible_types or []
         self._attr_unique_id = f"{entry.entry_id}_calendar"
+        self._language = get_entry_language(entry)
+        self._attr_name = ui_text("calendar", self._language)
 
     @property
     def device_info(self) -> DeviceInfo:
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.entry_id)},
-            name="MEL Collections",
+            name=ui_text("device_name", self._language),
             manufacturer="Publidata / MEL",
             configuration_url="https://lillemetropole.fr/",
         )
@@ -66,11 +74,8 @@ class MelCollecteCalendar(CalendarEntity):
         return evt.get("name", "")
 
     def _get_locale(self) -> str:
-        """Retourne la langue courante de Home Assistant ou 'fr' par défaut."""
-        hass = getattr(self, "hass", None)
-        if hass is None:
-            return "fr"
-        return getattr(hass.config, "language", "fr") or "fr"
+        """Retourne la langue choisie dans la configuration (français par défaut)."""
+        return self._language
 
     @property
     def event(self) -> CalendarEvent | None:

@@ -12,11 +12,15 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import MelCollecteAPI
 from .const import (
+    CONF_LANGUAGE,
     DEFAULT_INSTANCE_ID,
+    DEFAULT_LANGUAGE,
     DEFAULT_LOOKAHEAD_DAYS,
     DEFAULT_UPDATE_INTERVAL,
     DEFAULT_VISIBLE_TYPES,
     DOMAIN,
+    LANGUAGE_CHOICES,
+    get_entry_language,
 )
 
 
@@ -29,7 +33,14 @@ class MelCollecteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: 
         if user_input is None:
             return self.async_show_form(
                 step_id="user",
-                data_schema=vol.Schema({vol.Required(CONF_ADDRESS): str}),
+                data_schema=vol.Schema(
+                    {
+                        vol.Required(CONF_ADDRESS): str,
+                        vol.Optional(CONF_LANGUAGE, default=DEFAULT_LANGUAGE): vol.In(
+                            LANGUAGE_CHOICES
+                        ),
+                    }
+                ),
             )
 
         await self.async_set_unique_id(user_input[CONF_ADDRESS])
@@ -83,6 +94,7 @@ class MelCollecteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: 
             data={
                 "address": user_input[CONF_ADDRESS],
                 "instance_id": DEFAULT_INSTANCE_ID,
+                CONF_LANGUAGE: user_input.get(CONF_LANGUAGE, DEFAULT_LANGUAGE),
             },
         )
 
@@ -131,6 +143,10 @@ class MelCollecteOptionsFlow(config_entries.OptionsFlowWithConfigEntry):
                             )
                         ),
                     ): str,
+                    vol.Optional(
+                        CONF_LANGUAGE,
+                        default=get_entry_language(self.config_entry),
+                    ): vol.In(LANGUAGE_CHOICES),
                 }
             ),
         )

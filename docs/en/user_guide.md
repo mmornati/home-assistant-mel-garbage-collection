@@ -50,8 +50,9 @@ The integration allows you to customize several parameters after the initial add
    - **Update interval**: data refresh frequency in days (1-30, default: 7).
    - **Forecast window**: number of days to look ahead for collection events (7-365, default: 90).
    - **Visible waste types**: selection of waste types to display. If no type is selected, all types are displayed (default behavior).
+   - **Labels language**: `Français` (default) or `English`. Applies to sensor names, waste types, alerts, calendar events and units, independently of the Home Assistant language.
 
-4. Validate to save. Changes take effect after the next refresh.
+4. Validate to save. The integration reloads automatically to apply the new options.
 
 ---
 

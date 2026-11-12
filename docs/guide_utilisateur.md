@@ -50,8 +50,9 @@ L'intégration permet de personnaliser plusieurs paramètres après l'ajout init
    - **Intervalle de mise à jour** : fréquence de rafraîchissement des données en jours (1-30, défaut : 7).
    - **Fenêtre de prévision** : nombre de jours à avancer pour les événements de collecte (7-365, défaut : 90).
    - **Types de déchets visibles** : sélection des types de déchets à afficher. Si aucun type n'est sélectionné, tous les types sont affichés (comportement par défaut).
+   - **Langue des libellés** : `Français` (défaut) ou `English`. S'applique aux noms des capteurs, aux types de déchets, aux alertes, aux événements du calendrier et aux unités, indépendamment de la langue de Home Assistant.
 
-4. Valider pour enregistrer. Les modifications prennent effet après le prochain rafraîchissement.
+4. Valider pour enregistrer. L'intégration se recharge automatiquement pour appliquer les nouvelles options.
 
 ---
 
