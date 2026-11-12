@@ -1,0 +1,3 @@
+[lint]
+# Règles explicites : ruff >= 0.17 a élargi le jeu de règles par défaut.
+select = ["E4", "E7", "E9", "F"]

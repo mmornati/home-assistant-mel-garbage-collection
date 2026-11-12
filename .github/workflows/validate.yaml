@@ -46,7 +46,8 @@ jobs:
                       imports.add(module)
 
           # Check for external packages used directly (aiohttp, async_timeout, etc.)
-          external_modules = {'aiohttp', 'async_timeout', 'aiohttp_client'}
+          # aiohttp est fourni par Home Assistant : hassfest interdit de le déclarer
+          external_modules = {'async_timeout'}
           used_external = imports & external_modules
 
           missing = used_external - normalized_reqs
