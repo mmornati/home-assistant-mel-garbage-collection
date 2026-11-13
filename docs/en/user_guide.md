@@ -110,22 +110,35 @@ pattern:
     color: grey
     pattern: Ordures ménagères résiduelles
     type: waste
-  - label: Green waste
-    icon: mdi:leaf
-    color: green
-    pattern: Déchets verts
-    type: organic
   - label: Packaging
     icon: mdi:recycle
-    color: amber
+    color: yellow
     pattern: Emballages recyclables
     type: recycle
+  - label: Biowaste
+    icon: mdi:leaf
+    color: brown
+    pattern: Déchets verts
+    type: organic
+  - label: Biowaste
+    icon: mdi:food-apple
+    color: brown
+    pattern: Biodéchets
+    type: organic
+  - label: Glass
+    icon: mdi:bottle-wine
+    color: green
+    pattern: Verre
+    type: others
   - label: Bulky items
     icon: mdi:sofa
     color: purple
     pattern: Encombrants
     type: others
 ```
+
+> **Colors**: they follow the MEL bins — **grey** lid for residual waste, **yellow** for packaging, **brown** for biowaste (the MEL publishes door-to-door biowaste collection under the `dv` code, hence the "Déchets verts" pattern). Glass, collected at drop-off points, is **green**. Without a `type` or a matching pattern, Trash Card falls back to its default color (purple).
+
 
 > **Important**: `pattern` (detection field) must exactly match the calendar event label. Sensors provide the complete list via the `types_friendly` attribute; you can check it in `Developer Tools → States`.
 

@@ -59,6 +59,19 @@ GARBAGE_TYPES_LABELS_EN = {
     "emb": "Recyclable packaging",
 }
 
+# Couleurs des bacs MEL (noms de couleurs Home Assistant, utilisables dans les cartes)
+GARBAGE_TYPES_COLORS = {
+    "omr": "grey",
+    "emb": "yellow",
+    "cs": "yellow",
+    "dv": "brown",
+    "bio": "brown",
+    "alim": "brown",
+    "verre": "green",
+    "enc": "purple",
+}
+DEFAULT_GARBAGE_COLOR = "blue-grey"
+
 ALERT_TYPE_LABELS = {
     "danger": "⚠️ Alerte",
     "warning": "⚡ Avertissement",
@@ -76,6 +89,11 @@ def garbage_label(code: str, locale: str = "fr") -> str:
     """Retourne un libellé humain pour le type de déchet."""
     labels = GARBAGE_TYPES_LABELS_EN if locale == "en" else GARBAGE_TYPES_LABELS
     return labels.get(code.lower(), code.upper())
+
+
+def garbage_color(code: str) -> str:
+    """Retourne la couleur du bac associée au type de déchet."""
+    return GARBAGE_TYPES_COLORS.get(code.lower(), DEFAULT_GARBAGE_COLOR)
 
 
 def alert_label(alert_type: str, locale: str = "fr") -> str:

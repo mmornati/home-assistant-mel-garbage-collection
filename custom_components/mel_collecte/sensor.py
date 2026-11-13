@@ -12,6 +12,7 @@ from homeassistant.util import dt as dt_util
 from .const import (
     DATA_COORDINATOR,
     DOMAIN,
+    garbage_color,
     garbage_label,
     get_entry_language,
     ui_text,
@@ -97,6 +98,7 @@ class MelCollecteNextSensor(MelCollecteBaseSensor):
             "collection_id": event["collection_id"],
             "types": event["garbage_types"],
             "types_friendly": event.get("garbage_types_friendly"),
+            "couleurs": [garbage_color(t) for t in event["garbage_types"]],
             "mode": event["collection_mode"],
             "debut": event["start"].isoformat(),
             "fin": event["end"].isoformat(),
@@ -182,6 +184,7 @@ class MelCollecteTypeSensor(MelCollecteBaseSensor):
             "mode": event["collection_mode"],
             "types": event["garbage_types"],
             "types_friendly": event.get("garbage_types_friendly"),
+            "couleur": garbage_color(self._type),
             "debut": event["start"].isoformat(),
             "fin": event["end"].isoformat(),
         }
@@ -227,6 +230,7 @@ class MelCollecteTypeDaysSensor(MelCollecteBaseSensor):
             "prochaine_collecte": event["start"].isoformat(),
             "type": self._type,
             "type_libelle": garbage_label(self._type, self._language),
+            "couleur": garbage_color(self._type),
         }
 
     def _next_event_for_type(self):
