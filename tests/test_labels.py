@@ -89,3 +89,53 @@ class TestAlertLabel:
         assert alert_label("DANGER") == "⚠️ Alerte"
         assert alert_label("Warning") == "⚡ Avertissement"
         assert alert_label("INFO") == "ℹ️ Information"
+
+
+def test_garbage_color_follows_mel_bins():
+    """Les couleurs suivent les bacs MEL (gris, jaune, marron)."""
+    from custom_components.mel_collecte.const import (
+        DEFAULT_GARBAGE_COLOR,
+        garbage_color,
+    )
+
+    assert garbage_color("omr") == "grey"
+    assert garbage_color("EMB") == "yellow"
+    assert garbage_color("dv") == "brown"
+    assert garbage_color("bio") == "brown"
+    assert garbage_color("verre") == "green"
+    assert garbage_color("brick") == DEFAULT_GARBAGE_COLOR
+
+
+def test_type_sensors_expose_color():
+    """Les capteurs par type exposent l'attribut couleur."""
+    from datetime import datetime, timedelta, timezone
+    from types import SimpleNamespace
+    from unittest.mock import patch
+
+    from custom_components.mel_collecte.sensor import (
+        MelCollecteNextSensor,
+        MelCollecteTypeDaysSensor,
+        MelCollecteTypeSensor,
+    )
+
+    now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+    event = {
+        "collection_id": "c",
+        "garbage_types": ["omr", "bio"],
+        "garbage_types_friendly": [],
+        "collection_mode": "door",
+        "start": now + timedelta(days=1),
+        "end": now + timedelta(days=1, hours=2),
+        "name": "x",
+    }
+    coordinator = SimpleNamespace(data={"events": [event]})
+    entry = SimpleNamespace(entry_id="e")
+    with patch(
+        "custom_components.mel_collecte.sensor.dt_util.utcnow", return_value=now
+    ):
+        typ = MelCollecteTypeSensor(coordinator, entry, "bio")
+        days = MelCollecteTypeDaysSensor(coordinator, entry, "omr")
+        nxt = MelCollecteNextSensor(coordinator, entry)
+        assert typ.extra_state_attributes["couleur"] == "brown"
+        assert days.extra_state_attributes["couleur"] == "grey"
+        assert nxt.extra_state_attributes["couleurs"] == ["grey", "brown"]

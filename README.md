@@ -61,7 +61,7 @@ L'intégration crée automatiquement les entités ci-dessous.
 | `sensor.collecte_<type>_dans` | Capteur | Nombre de jours avant la prochaine collecte pour ce type |
 | `sensor.alertes_collecte` | Capteur | Alertes actives du service |
 
-**Attributs disponibles** : `types`, `types_friendly`, `mode`, `debut`, `fin`, `accepted_waste`, `rejected_waste`.
+**Attributs disponibles** : `types`, `types_friendly`, `couleur` / `couleurs` (couleur du bac : `grey`, `yellow`, `brown`…), `mode`, `debut`, `fin`, `accepted_waste`, `rejected_waste`.
 
 ### Affichage recommandé
 
@@ -77,15 +77,36 @@ pattern:
     icon: mdi:trash-can
     color: grey
     pattern: Ordures ménagères résiduelles
-  - label: Déchets verts
-    icon: mdi:leaf
-    color: green
-    pattern: Déchets verts
+    type: waste
   - label: Emballages
     icon: mdi:recycle
-    color: amber
+    color: yellow
     pattern: Emballages recyclables
+    type: recycle
+  - label: Biodéchets
+    icon: mdi:leaf
+    color: brown
+    pattern: Déchets verts
+    type: organic
+  - label: Biodéchets
+    icon: mdi:food-apple
+    color: brown
+    pattern: Biodéchets
+    type: organic
+  - label: Verre
+    icon: mdi:bottle-wine
+    color: green
+    pattern: Verre
+    type: others
+  - label: Encombrants
+    icon: mdi:sofa
+    color: purple
+    pattern: Encombrants
+    type: others
 ```
+
+> **Couleurs** : elles reprennent celles des bacs de la MEL — couvercle **gris** pour les ordures ménagères, **jaune** pour les emballages, **marron** pour les biodéchets (la MEL publie sous le code `dv` la collecte des biodéchets en porte-à-porte, d'où le motif « Déchets verts »). Le verre, en point d'apport, est en **vert**. Sans `type` ou sans motif correspondant, Trash Card applique sa couleur par défaut (violet).
+
 
 ### Internationalisation
 

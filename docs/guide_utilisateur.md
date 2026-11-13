@@ -110,22 +110,35 @@ pattern:
     color: grey
     pattern: Ordures ménagères résiduelles
     type: waste
-  - label: Déchets verts
-    icon: mdi:leaf
-    color: green
-    pattern: Déchets verts
-    type: organic
   - label: Emballages
     icon: mdi:recycle
-    color: amber
+    color: yellow
     pattern: Emballages recyclables
     type: recycle
+  - label: Biodéchets
+    icon: mdi:leaf
+    color: brown
+    pattern: Déchets verts
+    type: organic
+  - label: Biodéchets
+    icon: mdi:food-apple
+    color: brown
+    pattern: Biodéchets
+    type: organic
+  - label: Verre
+    icon: mdi:bottle-wine
+    color: green
+    pattern: Verre
+    type: others
   - label: Encombrants
     icon: mdi:sofa
     color: purple
     pattern: Encombrants
     type: others
 ```
+
+> **Couleurs** : elles reprennent celles des bacs de la MEL — couvercle **gris** pour les ordures ménagères, **jaune** pour les emballages, **marron** pour les biodéchets (la MEL publie sous le code `dv` la collecte des biodéchets en porte-à-porte, d'où le motif « Déchets verts »). Le verre, en point d'apport, est en **vert**. Sans `type` ou sans motif correspondant, Trash Card applique sa couleur par défaut (violet).
+
 
 > **Important** : `pattern` (champ de détection) doit correspondre exactement au libellé d'événement du calendrier. Les capteurs fournissent la liste complète via l'attribut `types_friendly`; vous pouvez la consulter dans `Outils de développement → États`.
 
