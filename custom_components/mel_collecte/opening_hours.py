@@ -195,7 +195,11 @@ def parse_opening_hours(spec: str | None) -> list[Rule]:
     """Convertit la chaîne publiée en règles ; les règles illisibles sont ignorées."""
     rules = []
     for chunk in (spec or "").split(";"):
-        rule = _parse_rule(chunk)
+        try:
+            rule = _parse_rule(chunk)
+        except ValueError:
+            # heure ou date impossible (« 25:00 », « Feb 45 ») : la règle est ignorée
+            rule = None
         if rule is not None:
             rules.append(rule)
     return rules

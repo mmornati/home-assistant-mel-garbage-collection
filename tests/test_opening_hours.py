@@ -74,6 +74,15 @@ def test_unreadable_rules_are_ignored():
     assert not OpeningHours(None)
 
 
+def test_impossible_times_do_not_raise():
+    # une heure invalide dans les données publiées ne doit pas faire planter les capteurs
+    assert parse_opening_hours("Mo 25:00-26:00; Tu 08:99-09:00") == []
+    assert _hours("Mo 25:00-26:00; Mo-Sa 08:00-12:00", date(2026, 6, 1)) == [
+        ("08:00", "12:00")
+    ]
+    assert _hours("Mo-Su 08:00-24:00", date(2026, 6, 1)) == [("08:00", "23:59")]
+
+
 def test_open_state_and_next_opening():
     hours = OpeningHours(FIXED, closed_days={(12, 25)})
     saturday_evening = datetime(2026, 11, 14, 19, 30)
