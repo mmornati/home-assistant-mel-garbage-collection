@@ -20,3 +20,8 @@ home-assistant.log
 
 .agents
 config
+
+# Rendus locaux (vidéo, essais de prononciation) et site généré
+build/
+site/
+.claude/

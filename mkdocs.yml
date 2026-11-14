@@ -1,0 +1,101 @@
+site_name: MEL Collecte
+site_description: >-
+  Les jours de collecte des déchets de la Métropole Européenne de Lille dans
+  Home Assistant : le bon bac, le bon soir, les déchèteries ouvertes et le guide
+  du tri, avec des cartes prêtes à l'emploi.
+site_author: Marco Mornati
+site_url: https://mmornati.github.io/home-assistant-mel-garbage-collection/
+
+repo_name: mmornati/home-assistant-mel-garbage-collection
+repo_url: https://github.com/mmornati/home-assistant-mel-garbage-collection
+edit_uri: edit/main/docs/
+
+copyright: >-
+  Projet libre sous licence MIT, indépendant de la Métropole Européenne de Lille.
+  Les données proviennent de la plateforme Publidata utilisée par le site de la MEL.
+
+theme:
+  name: material
+  custom_dir: overrides
+  language: fr
+  logo: assets/mark.svg
+  favicon: assets/mark.svg
+  font:
+    text: Figtree
+    code: JetBrains Mono
+  palette:
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Passer en mode sombre
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Passer en mode clair
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/mmornati/home-assistant-mel-garbage-collection
+    - icon: fontawesome/solid/bug
+      link: https://github.com/mmornati/home-assistant-mel-garbage-collection/issues
+
+extra_css:
+  - stylesheets/extra.css
+
+hooks:
+  - hooks/copy_cards.py
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search:
+      lang: fr
+  - minify:
+      minify_html: true
+
+exclude_docs: |
+  requirements.txt
+
+not_in_nav: |
+  /guide_utilisateur.md
+  /en/user_guide.md
+
+nav:
+  - Accueil: index.md
+  - Installation: installation.md
+  - Les cartes: cartes.md
+  - Capteurs: capteurs.md
+  - Automatisations: automatisations.md
+  - Vidéo: video.md
+  - Questions fréquentes: faq.md

@@ -1,0 +1,83 @@
+{
+  "_doc": "Scènes et voix off de la vidéo de présentation de MEL Collecte. Une entrée par scène ; chaque phrase devient un sous-titre et un repère d'animation. Les nombres s'écrivent en toutes lettres. Relancer narrate.py après toute modification.",
+  "langs": ["fr"],
+  "engine": "kokoro",
+  "scenes": [
+    {
+      "id": "doute",
+      "min": 6,
+      "lead": 0.7,
+      "chapter": {"fr": "Le doute"},
+      "fr": [
+        "Vingt-deux heures. Vous êtes en pyjama.",
+        "Et là, le doute : c'était ce soir, le bac jaune ?"
+      ]
+    },
+    {
+      "id": "intro",
+      "min": 7,
+      "chapter": {"fr": "MEL Collecte"},
+      "fr": [
+        "Voici MEL Collecte, l'intégration gratuite pour Home Assistant.",
+        "Le calendrier des déchets de la Métropole Européenne de Lille, directement dans votre maison connectée."
+      ]
+    },
+    {
+      "id": "installation",
+      "min": 7,
+      "chapter": {"fr": "Installation"},
+      "fr": [
+        "Installez-la avec HACS, puis saisissez votre adresse.",
+        "C'est tout : votre secteur, vos bacs et vos horaires sont trouvés automatiquement."
+      ]
+    },
+    {
+      "id": "carte",
+      "min": 9,
+      "chapter": {"fr": "La prochaine collecte"},
+      "fr": [
+        "Sur votre tableau de bord, une carte vous dit quoi faire, tout simplement.",
+        "Ce soir, sortez le bac marron.",
+        "Et quand le camion arrive, vous le voyez passer."
+      ]
+    },
+    {
+      "id": "tri",
+      "min": 9,
+      "chapter": {"fr": "Calendrier et guide du tri"},
+      "fr": [
+        "Le mois entier, aux couleurs de vos bacs.",
+        "Un doute sur un déchet ? Tapez son nom :",
+        "le guide du tri de la métropole vous répond."
+      ]
+    },
+    {
+      "id": "decheteries",
+      "min": 8,
+      "chapter": {"fr": "Déchèteries"},
+      "fr": [
+        "Les quatorze déchèteries de la métropole, classées par distance.",
+        "Ouverte, ou fermée ? Vous le savez en un coup d'œil, avec l'itinéraire."
+      ]
+    },
+    {
+      "id": "rappel",
+      "min": 7,
+      "chapter": {"fr": "Automatisations"},
+      "fr": [
+        "Et votre maison peut vous prévenir toute seule :",
+        "une notification sur le téléphone, une lampe qui passe au jaune."
+      ]
+    },
+    {
+      "id": "fin",
+      "min": 7,
+      "tail": 1.6,
+      "chapter": {"fr": "À vous"},
+      "fr": [
+        "MEL Collecte. Gratuit, libre, et prêt en deux minutes.",
+        "Ne ratez plus jamais le camion."
+      ]
+    }
+  ]
+}
