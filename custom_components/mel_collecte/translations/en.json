@@ -73,6 +73,12 @@
             "name": "Last alert message"
           }
         }
+      },
+      "decheterie_la_plus_proche": {
+        "name": "Nearest recycling centre"
+      },
+      "prochaine_decheterie_mobile": {
+        "name": "Next mobile recycling centre"
       }
     },
     "calendar": {
@@ -86,6 +92,11 @@
             "name": "Number of events"
           }
         }
+      }
+    },
+    "binary_sensor": {
+      "decheterie_ouverte": {
+        "name": "Recycling centre open"
       }
     }
   }

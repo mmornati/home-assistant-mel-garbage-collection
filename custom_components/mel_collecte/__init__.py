@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
@@ -34,13 +36,25 @@ from .const import (
 )
 from .coordinator import MelCollecteCoordinator
 
-PLATFORMS: list[str] = ["calendar", "sensor"]
+LOGGER = logging.getLogger(__name__)
+
+PLATFORMS: list[str] = ["binary_sensor", "calendar", "sensor"]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Configuration via configuration.yaml (non utilisée)."""
+    """Déclarer les cartes de tableau de bord (aucune configuration YAML)."""
+    try:
+        from homeassistant.loader import async_get_integration
+
+        from .dashboard import async_register_dashboard
+
+        integration = await async_get_integration(hass, DOMAIN)
+        await async_register_dashboard(hass, str(integration.version))
+    except Exception as err:  # pylint: disable=broad-except
+        # les cartes sont un plus : les capteurs doivent fonctionner sans elles
+        LOGGER.warning("Cartes MEL Collecte non chargées : %s", err)
     return True
 
 

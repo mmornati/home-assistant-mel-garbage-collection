@@ -132,5 +132,4 @@ class MelCollecteCalendar(CalendarEntity):
         }
 
     async def async_update(self):
-        if self._coordinator.last_update_success:
-            await self._coordinator.async_request_refresh()
+        """Rien à récupérer : le coordonnateur rafraîchit les données à son rythme."""

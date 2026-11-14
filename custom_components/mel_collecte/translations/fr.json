@@ -73,6 +73,12 @@
             "name": "Message de la dernière alerte"
           }
         }
+      },
+      "decheterie_la_plus_proche": {
+        "name": "Déchèterie la plus proche"
+      },
+      "prochaine_decheterie_mobile": {
+        "name": "Prochaine déchèterie mobile"
       }
     },
     "calendar": {
@@ -86,6 +92,11 @@
             "name": "Nombre d'événements"
           }
         }
+      }
+    },
+    "binary_sensor": {
+      "decheterie_ouverte": {
+        "name": "Déchèterie ouverte"
       }
     }
   }

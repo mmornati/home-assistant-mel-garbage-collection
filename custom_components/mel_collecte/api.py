@@ -267,3 +267,32 @@ class MelCollecteAPI:
         if not hits_list or not isinstance(hits_list, list):
             return []
         return [hit.get("_source") for hit in hits_list if hit.get("_source")]
+
+    async def fetch_facilities(
+        self,
+        instance_id: str,
+        facility_type: int,
+        query: str | None = None,
+        size: int = 400,
+    ) -> list[dict[str, Any]]:
+        """Récupère les lieux (déchèteries, points d'apport) d'un type donné."""
+        params: list[tuple[str, str]] = [
+            ("types[]", "Facility"),
+            ("instances[]", instance_id),
+            ("facility_types[]", str(facility_type)),
+            ("size", str(size)),
+        ]
+        if query:
+            params.append(("q", query))
+
+        try:
+            payload = await self._request_with_retry(SEARCH_URL, params)
+            self._last_error = None
+        except (TransientError, PermanentError) as exc:
+            self._last_error = str(exc)
+            raise
+
+        hits_list = (payload.get("hits") or {}).get("hits")
+        if not hits_list or not isinstance(hits_list, list):
+            return []
+        return [hit.get("_source") for hit in hits_list if hit.get("_source")]
