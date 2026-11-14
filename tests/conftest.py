@@ -206,6 +206,17 @@ sensor_module.SensorEntity = SensorEntity
 components.sensor = sensor_module
 ha.components = components
 
+# ----- homeassistant.components.binary_sensor -----------------------------
+binary_sensor_module = _ensure_module("homeassistant.components.binary_sensor")
+
+
+class BinarySensorEntity(Entity):
+    """Stub minimal de BinarySensorEntity."""
+
+
+binary_sensor_module.BinarySensorEntity = BinarySensorEntity
+components.binary_sensor = binary_sensor_module
+
 # ----- homeassistant.components.calendar ----------------------------------
 calendar_module = _ensure_module("homeassistant.components.calendar")
 
@@ -281,6 +292,7 @@ def as_utc(value: datetime) -> datetime:
 
 
 dt_module.utcnow = utcnow
+dt_module.now = utcnow
 dt_module.as_utc = as_utc
 
 ha.helpers = helpers

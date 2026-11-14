@@ -1,0 +1,72 @@
+---
+name: Documentation
+
+"on":
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'overrides/**'
+      - 'hooks/**'
+      - 'mkdocs.yml'
+      - 'custom_components/mel_collecte/frontend/**'
+      - '.github/workflows/deploy-docs.yaml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'overrides/**'
+      - 'hooks/**'
+      - 'mkdocs.yml'
+      - 'custom_components/mel_collecte/frontend/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+
+      - name: Install MkDocs
+        run: pip install -r docs/requirements.txt
+
+      - name: Build
+        run: mkdocs build --strict
+
+      - name: Upload the site
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./site
+
+  deploy:
+    name: Publish to GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

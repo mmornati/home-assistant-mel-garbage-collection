@@ -1,0 +1,160 @@
+{% extends "main.html" %}
+
+{% set hacs = "https://my.home-assistant.io/redirect/hacs_repository/?owner=mmornati&repository=home-assistant-mel-garbage-collection&category=integration" %}
+{% set add_integration = "https://my.home-assistant.io/redirect/config_flow_start/?domain=mel_collecte" %}
+{% set gh = config.repo_url %}
+
+{% block extrahead %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ 'stylesheets/home.css' | url }}">
+{% endblock %}
+
+{% block tabs %}{% endblock %}
+{% block site_nav %}{% endblock %}
+
+{% block container %}
+<div class="mc">
+
+  <header class="mc-bar" aria-label="Site">
+    <a class="mc-brand" href="{{ '.' | url }}">
+      <img src="{{ 'assets/mark.svg' | url }}" alt="" width="30" height="30">
+      <span>MEL Collecte</span>
+    </a>
+    <nav class="mc-nav" aria-label="Sections">
+      <a href="#cartes">Les cartes</a>
+      <a href="#video">Vidéo</a>
+      <a href="#installer">Installer</a>
+      <a href="{{ 'installation/' | url }}">Documentation</a>
+      <a class="mc-nav__gh" href="{{ gh }}">{% include ".icons/fontawesome/brands/github.svg" %}<span>GitHub</span></a>
+    </nav>
+  </header>
+
+  <section class="mc-hero" aria-labelledby="mc-title">
+    <div class="mc-hero__text">
+      <h1 id="mc-title">Ce soir, on sort <span class="mc-lid">le jaune.</span></h1>
+      <p class="mc-hero__lede">MEL Collecte branche le calendrier des déchets de la Métropole Européenne de Lille sur Home Assistant. Le bon bac, le bon soir, la déchèterie ouverte, et quatre cartes prêtes à poser sur votre tableau de bord.</p>
+      <div class="mc-actions">
+        <a class="mc-btn mc-btn--ink" href="{{ hacs }}">Installer avec HACS</a>
+        <a class="mc-btn" href="#video">Regarder la vidéo, 1 minute</a>
+      </div>
+      <p class="mc-hero__note">Gratuit, libre, sans compte à créer. Fonctionne pour les 95 communes de la métropole.</p>
+    </div>
+
+    <div class="mc-stage">
+      <div class="mel-live mc-stage__card" data-mel-card="mel-collecte-card" data-config='{"show_alerts": false}'></div>
+      <div class="mc-moments" role="group" aria-label="Changer l'heure de la démonstration">
+        <span>Essayez :</span>
+        <button data-mel-moment="live" aria-pressed="true">Maintenant</button>
+        <button data-mel-moment="eve" aria-pressed="false">La veille au soir</button>
+        <button data-mel-moment="today" aria-pressed="false">Le jour J</button>
+        <button data-mel-moment="truck" aria-pressed="false">Le camion passe</button>
+      </div>
+    </div>
+
+    <svg class="mc-skyline" viewBox="0 0 1200 120" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 120V70h14v-9h14v-9h16v9h14v9h14v50zM96 120V58h12v-9h12v-9h14v9h12v9h12v62zM188 120V78h16V64h10V52h12v12h10v14h16v42zM282 120V66h13v-9h13v-9h15v9h13v9h13v54zM376 120V44h8V22h6V8h5V0h6v8h5v14h6v22h8v76zM428 120V72h12v-9h12v-9h14v9h12v9h12v48zM520 120V60h13v-9h13v-9h15v9h13v9h13v60zM616 120V80h14v-8h14v-8h14v8h14v8h14v40zM712 120V64h12v-9h12v-9h14v9h12v9h12v56zM804 120V74h15V62h9V52h11v10h9v12h15v46zM898 120V56h13v-9h13v-9h15v9h13v9h13v64zM992 120V70h12v-9h12v-9h14v9h12v9h12v50zM1084 120V62h13v-9h13v-9h15v9h13v9h13v58zM1168 120V76h32v44z"/>
+    </svg>
+  </section>
+
+  <main>
+    <section class="mc-section" id="cartes" aria-labelledby="mc-cartes">
+      <div class="mc-intro">
+        <h2 id="mc-cartes">Quatre cartes, aucun réglage</h2>
+        <p>Les cartes sont livrées avec l'intégration. Elles apparaissent dans « Ajouter une carte » dès l'installation, trouvent seules votre adresse et suivent le thème clair ou sombre de Home Assistant. Celles de cette page sont les vraies : cliquez dedans.</p>
+      </div>
+
+      <article class="mc-row" style="--lid:#7b8794">
+        <div class="mc-row__text">
+          <h3>Le mois, aux couleurs des bacs</h3>
+          <p>Gris pour les ordures ménagères, jaune pour les emballages, marron pour les biodéchets : les mêmes couleurs que les couvercles sur votre trottoir. Touchez un jour pour voir l'heure de passage.</p>
+          <pre><code>type: custom:mel-collecte-calendar-card</code></pre>
+        </div>
+        <div class="mel-live" data-mel-card="mel-collecte-calendar-card"></div>
+      </article>
+
+      <article class="mc-row mc-row--flip" style="--lid:#8d5b3a">
+        <div class="mc-row__text">
+          <h3>« Ça va où, le pot de yaourt ? »</h3>
+          <p>Tapez un déchet : la carte répond avec les consignes officielles de la MEL, bac par bac, et dit aussi ce qu'il ne faut surtout pas y mettre. Essayez « verre », « carton » ou « pile ».</p>
+          <pre><code>type: custom:mel-collecte-guide-card</code></pre>
+        </div>
+        <div class="mel-live" data-mel-card="mel-collecte-guide-card"></div>
+      </article>
+
+      <article class="mc-row" style="--lid:#2e9d5c">
+        <div class="mc-row__text">
+          <h3>La déchèterie est-elle ouverte ?</h3>
+          <p>Les 14 déchèteries de la métropole classées par distance, ouvertes ou fermées à l'instant, avec l'heure de fermeture et l'itinéraire. Les déchèteries mobiles, les bornes à verre et les composteurs de quartier sont dans les autres onglets.</p>
+          <pre><code>type: custom:mel-collecte-places-card</code></pre>
+        </div>
+        <div class="mel-live" data-mel-card="mel-collecte-places-card"></div>
+      </article>
+    </section>
+
+    <section class="mc-section mc-video" id="video" aria-labelledby="mc-video">
+      <div class="mc-intro">
+        <h2 id="mc-video">Une minute pour tout voir</h2>
+        <p>L'installation, les cartes et une automatisation, racontées en vidéo.</p>
+      </div>
+      <div class="mc-video__frame">
+        <iframe src="{{ 'videos/mel-collecte/' | url }}?embed=1&amp;lang=fr" title="Présentation de MEL Collecte en une minute" loading="lazy" allow="fullscreen; autoplay" allowfullscreen></iframe>
+      </div>
+      <p class="mc-video__alt"><a href="{{ 'videos/mel-collecte/' | url }}?lang=fr">Ouvrir la vidéo en pleine page</a></p>
+    </section>
+
+    <section class="mc-section" id="installer" aria-labelledby="mc-installer">
+      <div class="mc-intro">
+        <h2 id="mc-installer">Installé en trois gestes</h2>
+      </div>
+      <ol class="mc-steps">
+        <li>
+          <h3>Ajoutez le dépôt à HACS</h3>
+          <p>Un clic ouvre HACS sur le bon dépôt. Installez, puis redémarrez Home Assistant.</p>
+          <a class="mc-link" href="{{ hacs }}">Ouvrir dans HACS</a>
+        </li>
+        <li>
+          <h3>Saisissez votre adresse</h3>
+          <p>« 19 rue Gambetta, Lille » suffit. L'intégration retrouve votre secteur de collecte et crée le calendrier et les capteurs.</p>
+          <a class="mc-link" href="{{ add_integration }}">Ajouter l'intégration</a>
+        </li>
+        <li>
+          <h3>Posez une carte</h3>
+          <p>Dans votre tableau de bord : Ajouter une carte, puis cherchez « MEL ». C'est tout.</p>
+          <a class="mc-link" href="{{ 'cartes/' | url }}">Voir les options des cartes</a>
+        </li>
+      </ol>
+    </section>
+
+    <section class="mc-section mc-auto" aria-labelledby="mc-auto">
+      <div class="mc-auto__text">
+        <h2 id="mc-auto">Votre maison vous le rappelle</h2>
+        <p>L'intégration déclenche un événement avant chaque collecte. Une notification sur le téléphone, une ampoule qui passe au jaune, une annonce sur l'enceinte de la cuisine : à vous de choisir.</p>
+        <p>Les capteurs disent aussi combien de jours il reste, si la déchèterie la plus proche est ouverte et quand passe la prochaine déchèterie mobile.</p>
+        <a class="mc-link" href="{{ 'automatisations/' | url }}">Exemples d'automatisations</a>
+      </div>
+      <pre class="mc-code"><code><span class="k">trigger:</span>
+  - <span class="k">platform:</span> event
+    <span class="k">event_type:</span> mel_collecte.collection_upcoming
+<span class="k">action:</span>
+  - <span class="k">service:</span> notify.mobile_app_telephone
+    <span class="k">data:</span>
+      <span class="k">title:</span> Poubelles
+      <span class="k">message:</span> &gt;
+        Demain : {% raw %}{{ trigger.event.data
+        .garbage_types_friendly | join(', ') }}{% endraw %}</code></pre>
+    </section>
+  </main>
+
+  <footer class="mc-foot">
+    <p><strong>MEL Collecte</strong> est un projet libre, sous licence MIT, sans lien avec la Métropole Européenne de Lille. Les données viennent de la plateforme Publidata, celle qu'utilise le site de la MEL.</p>
+    <nav aria-label="Liens">
+      <a href="{{ 'installation/' | url }}">Documentation</a>
+      <a href="{{ 'faq/' | url }}">Questions fréquentes</a>
+      <a href="{{ gh }}">Code source</a>
+      <a href="{{ gh }}/issues">Signaler un problème</a>
+    </nav>
+  </footer>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}

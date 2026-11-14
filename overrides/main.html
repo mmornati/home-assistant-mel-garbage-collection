@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+  <meta property="og:title" content="{% if page.title and not page.is_homepage %}{{ page.title }} · {% endif %}{{ config.site_name }}">
+  <meta property="og:description" content="{{ config.site_description }}">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ 'javascripts/mel-demo.js' | url }}"></script>
+{% endblock %}

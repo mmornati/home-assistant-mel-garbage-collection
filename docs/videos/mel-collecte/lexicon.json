@@ -1,0 +1,7 @@
+{
+  "_doc": "Corrections de prononciation, appliquées au texte lu seulement (les sous-titres gardent l'original). Les clés sont des mots entiers, sensibles à la casse. Une valeur [[…]] est de l'API brut (Kokoro, Azure). Utiliser la compétence narration-lexicon pour trouver et vérifier les entrées. « MEL » se dit comme un mot à Lille (la voix l'épelait) ; « HACS » se dit « hacks ».",
+  "fr": {
+    "MEL": "Mèl",
+    "HACS": "[[aks]]"
+  }
+}

@@ -1,0 +1,89 @@
+/* Identité du site : l'anthracite des bacs, le jaune du couvercle des emballages */
+:root {
+  --mc-ink: #1e2329;
+  --mc-paper: #f6f2e9;
+  --mc-panel: #fffdf8;
+  --mc-line: #ddd6c6;
+  --mc-soft: #5a6470;
+  --mc-yellow: #f2bb0c;
+  --mc-yellow-deep: #d9a400;
+  --mc-brick: #a8432b;
+  --mc-display: "Bricolage Grotesque", "Figtree", sans-serif;
+}
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #1e2329;
+  --md-primary-fg-color--light: #39424c;
+  --md-primary-fg-color--dark: #14181c;
+  --md-primary-bg-color: #fffdf8;
+  --md-accent-fg-color: #a8432b;
+  --md-default-bg-color: #f6f2e9;
+  --md-default-fg-color: #1e2329;
+  --md-default-fg-color--light: #5a6470;
+  --md-typeset-a-color: #8f3a25;
+  --md-code-bg-color: #ece6d8;
+  --md-code-fg-color: #2b323a;
+}
+
+[data-md-color-scheme="slate"] {
+  --mc-ink: #eef0f2;
+  --mc-paper: #15181c;
+  --mc-panel: #1d2127;
+  --mc-line: #343b44;
+  --mc-soft: #a3acb6;
+  --mc-brick: #f0a184;
+  --md-primary-fg-color: #14181c;
+  --md-primary-bg-color: #eef0f2;
+  --md-accent-fg-color: #f2bb0c;
+  --md-default-bg-color: #15181c;
+  --md-typeset-a-color: #f2bb0c;
+  --md-code-bg-color: #20252c;
+}
+
+::selection { background: var(--mc-yellow); color: #1e2329; }
+
+.md-typeset h1, .md-typeset h2, .md-typeset h3 {
+  font-family: var(--mc-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--md-default-fg-color);
+}
+.md-typeset h1 { font-size: 2.2rem; line-height: 1.1; margin-bottom: 0.6em; }
+.md-typeset h2 { margin-top: 2.2em; }
+.md-typeset a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.md-typeset a:hover { text-decoration-thickness: 2px; }
+.md-typeset .headerlink, .md-typeset a.md-button { text-decoration: none; }
+.md-header { box-shadow: none; border-bottom: 3px solid var(--mc-yellow); }
+.md-tabs { background: var(--md-primary-fg-color); }
+.md-typeset table:not([class]) { font-size: 0.74rem; border: 1px solid var(--mc-line); box-shadow: none; }
+.md-typeset table:not([class]) th { background: color-mix(in srgb, var(--mc-yellow) 22%, var(--mc-panel)); font-weight: 600; }
+.md-typeset .admonition, .md-typeset details { border-width: 1px; box-shadow: none; font-size: 0.74rem; }
+.md-typeset code { border-radius: 5px; }
+
+/* Démonstrations en direct : les cartes lisent les variables de thème de Home Assistant */
+.mel-live {
+  --primary-text-color: #1c1f24;
+  --secondary-text-color: #5f6875;
+  --card-background-color: #ffffff;
+  --divider-color: rgba(30, 35, 41, 0.14);
+  --primary-color: #2a6fc9;
+  font-family: "Figtree", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  min-height: 180px;
+  color: var(--mc-soft);
+}
+[data-md-color-scheme="slate"] .mel-live {
+  --primary-text-color: #e8ebef;
+  --secondary-text-color: #9da6b1;
+  --card-background-color: #1d2127;
+  --divider-color: rgba(255, 255, 255, 0.14);
+  --primary-color: #6cb2ff;
+}
+.md-typeset .mel-live { max-width: 440px; margin: 1.4em 0 2em; }
+.mel-live > * { box-shadow: 0 1px 2px rgba(30, 35, 41, 0.06), 0 12px 32px -12px rgba(30, 35, 41, 0.22); border-radius: 12px; }
+
+.mel-swatch { display: inline-block; width: 1.1em; height: 0.42em; border-radius: 3px 3px 1px 1px; background: var(--c); margin-right: 0.35em; vertical-align: 0.12em; }
+
+.mel-video { aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #1e2329; margin: 1.4em 0; }
+.mel-video iframe { width: 100%; height: 100%; border: 0; display: block; }

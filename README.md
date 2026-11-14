@@ -7,6 +7,8 @@
 [![Validate](https://github.com/mmornati/home-assistant-mel-garbage-collection/actions/workflows/validate.yaml/badge.svg)](https://github.com/mmornati/home-assistant-mel-garbage-collection/actions/workflows/validate.yaml)
 [![codecov](https://codecov.io/gh/mmornati/home-assistant-mel-garbage-collection/branch/main/graph/badge.svg)](https://codecov.io/gh/mmornati/home-assistant-mel-garbage-collection)
 
+**[Documentation et démonstration en direct](https://mmornati.github.io/home-assistant-mel-garbage-collection/)** · [Vidéo d'une minute](https://mmornati.github.io/home-assistant-mel-garbage-collection/videos/mel-collecte/?lang=fr)
+
 > **Ne ratez plus jamais une collecte !** Ce composant personnalisé récupère automatiquement les jours de passage pour la Métropole Européenne de Lille et les expose dans Home Assistant — calendriers, capteurs et alertes en un seul plugin.
 
 ---
@@ -18,6 +20,9 @@
 - **Système d'alertes** : Alertes en temps réel du service de collecte
 - **Bilingue** : Localisation complète en français et anglais
 - **Automatisations par événements** : Événement natif `mel_collecte.collection_upcoming` pour des automatisations simples
+- **Cartes prêtes à l'emploi** : Quatre cartes de tableau de bord livrées avec l'intégration (prochaine collecte, calendrier, guide du tri, déchèteries)
+- **Déchèteries et points d'apport** : Les 14 déchèteries de la métropole classées par distance, ouvertes ou fermées à l'instant, les déchèteries mobiles, les bornes à verre et les composteurs de quartier
+- **Guide du tri** : Les consignes officielles de la MEL, ce qui va dans chaque bac et ce qui n'y va pas
 - **Compatible Trash Card** : Fonctionne avec la carte communautaire Trash Card
 
 ---
@@ -60,12 +65,29 @@ L'intégration crée automatiquement les entités ci-dessous.
 | `sensor.collecte_<type>` | Capteur | Un capteur par type (`dechets_verts`, `emballages`, …) |
 | `sensor.collecte_<type>_dans` | Capteur | Nombre de jours avant la prochaine collecte pour ce type |
 | `sensor.alertes_collecte` | Capteur | Alertes actives du service |
+| `sensor.decheterie_la_plus_proche` | Capteur | Déchèterie la plus proche : distance, horaires du jour, ouverture |
+| `binary_sensor.decheterie_ouverte` | Capteur binaire | Activé quand la déchèterie la plus proche est ouverte |
+| `sensor.prochaine_decheterie_mobile` | Capteur | Prochain passage d'une déchèterie mobile près de l'adresse |
 
 **Attributs disponibles** : `types`, `types_friendly`, `couleur` / `couleurs` (couleur du bac : `grey`, `yellow`, `brown`…), `mode`, `debut`, `fin`, `accepted_waste`, `rejected_waste`.
 
-### Affichage recommandé
+### Cartes de tableau de bord
 
-Pour une carte visuelle, installez [Trash Card](https://github.com/idaho/hassio-trash-card) via HACS :
+Quatre cartes sont livrées avec l'intégration : rien d'autre à installer. Dans un tableau de bord, **Ajouter une carte**, puis cherchez « MEL ».
+
+| Carte | Type | Ce qu'elle montre |
+|-------|------|-------------------|
+| Prochaine collecte | `custom:mel-collecte-card` | Le bac à sortir et quand le sortir, les jours à venir, les informations de la MEL |
+| Calendrier | `custom:mel-collecte-calendar-card` | Le mois, aux couleurs des couvercles |
+| Guide du tri | `custom:mel-collecte-guide-card` | Recherche d'un déchet dans les consignes officielles, bac par bac |
+| Déchèteries et points d'apport | `custom:mel-collecte-places-card` | Les déchèteries les plus proches (ouvertes ou fermées), déchèteries mobiles, bornes à verre, composteurs |
+
+Les cartes trouvent seules l'adresse configurée et suivent le thème de Home Assistant. Démonstration en direct et options : [documentation des cartes](https://mmornati.github.io/home-assistant-mel-garbage-collection/cartes/).
+
+<details>
+<summary>Avec la carte communautaire Trash Card</summary>
+
+Le calendrier reste compatible avec [Trash Card](https://github.com/idaho/hassio-trash-card) :
 
 ```yaml
 type: custom:trash-card
@@ -105,8 +127,10 @@ pattern:
     type: others
 ```
 
-> **Couleurs** : elles reprennent celles des bacs de la MEL — couvercle **gris** pour les ordures ménagères, **jaune** pour les emballages, **marron** pour les biodéchets (la MEL publie sous le code `dv` la collecte des biodéchets en porte-à-porte, d'où le motif « Déchets verts »). Le verre, en point d'apport, est en **vert**. Sans `type` ou sans motif correspondant, Trash Card applique sa couleur par défaut (violet).
 
+Les couleurs reprennent celles des bacs de la MEL : **gris** pour les ordures ménagères, **jaune** pour les emballages, **marron** pour les biodéchets (publiés par la MEL sous le code `dv`, d'où le motif « Déchets verts »), **vert** pour le verre.
+
+</details>
 
 ### Internationalisation
 
@@ -139,7 +163,11 @@ graph LR
     PARSE -->|sensors| SENS[Capteurs<br/>par type]
 ```
 
-L'intégration interroge l'API Publidata au démarrage puis **toutes les semaines** (intervalle configurable).
+L'intégration interroge l'API Publidata au démarrage puis **toutes les semaines** (intervalle configurable). Les capteurs recalculent leur état à partir des données en mémoire, sans nouvelle requête.
+
+### Documentation
+
+Le site se construit avec MkDocs : `pip install -r docs/requirements.txt`, puis `mkdocs serve`. Les démonstrations utilisent le fichier des cartes livré avec l'intégration (`custom_components/mel_collecte/frontend/mel-collecte-cards.js`). La vidéo est dans `docs/videos/mel-collecte/` : le texte de la voix off est dans `script.json`, les scènes dans `scenes.js`.
 
 ---
 
@@ -191,6 +219,7 @@ make format    # Appliquer black
 1. **Géocodage** — `GET /v2/geocoder?q=<adresse>` → `address_id`
 2. **Collectes** — `GET /v2/search?types[]=Platform::Services::WasteCollection&address_id=<id>`
 3. **Alertes** — `GET /v2/search?types[]=Alert&states[]=visible&address_id=<id>`
+4. **Lieux** — `GET /v2/search?types[]=Facility&facility_types[]=<type>` (déchèteries, déchèteries mobiles, composteurs, bornes à verre)
 
 ### Parsing des horaires
 

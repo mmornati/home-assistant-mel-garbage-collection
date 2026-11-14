@@ -9,6 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.util import dt as dt_util
 
+from .facilities import facility_status, next_mobile_visit
 from .const import (
     DATA_COORDINATOR,
     DOMAIN,
@@ -33,6 +34,12 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         MelCollecteNextCollectionDaysSensor(coordinator, entry),
         MelCollecteAlertSensor(coordinator, entry),
     ]
+
+    facilities = data.get("facilities") or {}
+    if facilities.get("recycling_center"):
+        entities.append(MelCollecteRecyclingCenterSensor(coordinator, entry))
+    if facilities.get("mobile"):
+        entities.append(MelCollecteMobileRecyclingCenterSensor(coordinator, entry))
 
     seen_types: set[str] = set()
     for collection in collections:
@@ -68,8 +75,11 @@ class MelCollecteBaseSensor(SensorEntity):
         )
 
     async def async_update(self):
-        if self._coordinator.last_update_success:
-            await self._coordinator.async_request_refresh()
+        """Rien à récupérer : l'état est recalculé à partir des données déjà en mémoire.
+
+        Home Assistant relit les capteurs toutes les 30 secondes ; les données,
+        elles, sont rafraîchies par le coordonnateur à son propre rythme.
+        """
 
 
 class MelCollecteNextSensor(MelCollecteBaseSensor):
@@ -282,4 +292,94 @@ class MelCollecteAlertSensor(MelCollecteBaseSensor):
             "last_alert_name": alerts[0].get("name") if alerts else None,
             "last_alert_type": alerts[0].get("alert_type") if alerts else None,
             "last_alert_message": alerts[0].get("blurb") if alerts else None,
+        }
+
+
+class MelCollecteRecyclingCenterSensor(MelCollecteBaseSensor):
+    """Déchèterie la plus proche de l'adresse, avec son état d'ouverture."""
+
+    _attr_translation_key = "decheterie_la_plus_proche"
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.entry_id}_nearest_recycling_center"
+        self._attr_icon = "mdi:recycle-variant"
+        self._attr_name = ui_text("nearest_recycling_center", self._language)
+
+    def _places(self) -> list[dict[str, Any]]:
+        data = self._coordinator.data or {}
+        return (data.get("facilities") or {}).get("recycling_center") or []
+
+    @property
+    def native_value(self):
+        places = self._places()
+        return places[0]["name"] if places else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        places = self._places()
+        if not places:
+            return {}
+        now = dt_util.now()
+        nearest = places[0]
+        status = facility_status(nearest, now)
+        return {
+            "adresse": nearest.get("address"),
+            "distance_km": nearest.get("distance_km"),
+            "ouverte": status["open"],
+            "horaires_du_jour": status["today"],
+            "fermeture": status["closes_at"],
+            "prochaine_ouverture": status["next_open"],
+            "horaires": nearest.get("opening_hours_text"),
+            "latitude": nearest.get("lat"),
+            "longitude": nearest.get("lon"),
+            "decheteries": [
+                {
+                    "nom": place["name"],
+                    "adresse": place.get("address"),
+                    "distance_km": place.get("distance_km"),
+                    "ouverte": facility_status(place, now)["open"],
+                }
+                for place in places[:5]
+            ],
+        }
+
+
+class MelCollecteMobileRecyclingCenterSensor(MelCollecteBaseSensor):
+    """Prochain passage d'une déchèterie mobile près de l'adresse."""
+
+    _attr_translation_key = "prochaine_decheterie_mobile"
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.entry_id}_next_mobile_recycling_center"
+        self._attr_icon = "mdi:truck-cargo-container"
+        self._attr_name = ui_text("next_mobile_recycling_center", self._language)
+
+    def _visit(self):
+        data = self._coordinator.data or {}
+        places = (data.get("facilities") or {}).get("mobile") or []
+        # les trois plus proches : au-delà, ce n'est plus « près de chez vous »
+        return next_mobile_visit(places[:3], dt_util.now())
+
+    @property
+    def native_value(self):
+        visit = self._visit()
+        return visit[1].isoformat() if visit else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        visit = self._visit()
+        if not visit:
+            return {}
+        place, start, end = visit
+        return {
+            "nom": place["name"],
+            "adresse": place.get("address"),
+            "distance_km": place.get("distance_km"),
+            "debut": start.isoformat(),
+            "fin": end.isoformat(),
+            "horaires": place.get("opening_hours_text"),
+            "latitude": place.get("lat"),
+            "longitude": place.get("lon"),
         }
