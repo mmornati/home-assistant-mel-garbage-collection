@@ -154,3 +154,16 @@ def next_mobile_visit(
         if upcoming and (best is None or upcoming[0] < best[1]):
             best = (place, upcoming[0], upcoming[1])
     return best
+
+
+def mobile_visits(
+    places: list[dict[str, Any]], now: datetime
+) -> list[tuple[dict[str, Any], datetime, datetime]]:
+    """Prochain passage de chaque déchèterie mobile, du plus proche dans le temps."""
+    visits: list[tuple[dict[str, Any], datetime, datetime]] = []
+    for place in places:
+        visit = next_mobile_visit([place], now)
+        if visit:
+            visits.append(visit)
+    visits.sort(key=lambda visit: visit[1])
+    return visits

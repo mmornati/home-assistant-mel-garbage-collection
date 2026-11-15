@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
 import voluptuous as vol
@@ -38,13 +40,15 @@ from .coordinator import MelCollecteCoordinator
 
 LOGGER = logging.getLogger(__name__)
 
+EVENT_CHECK_INTERVAL = timedelta(minutes=1)
+
 PLATFORMS: list[str] = ["binary_sensor", "calendar", "sensor"]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Déclarer les cartes de tableau de bord (aucune configuration YAML)."""
+    """Déclarer les cartes et installer les modèles d'automatisation."""
     try:
         from homeassistant.loader import async_get_integration
 
@@ -55,6 +59,13 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     except Exception as err:  # pylint: disable=broad-except
         # les cartes sont un plus : les capteurs doivent fonctionner sans elles
         LOGGER.warning("Cartes MEL Collecte non chargées : %s", err)
+    try:
+        from .blueprints import install_blueprints
+
+        await hass.async_add_executor_job(install_blueprints, hass.config.path())
+    except Exception as err:  # pylint: disable=broad-except
+        # les modèles d'automatisation sont un plus, eux aussi
+        LOGGER.warning("Modèles d'automatisation MEL Collecte non installés : %s", err)
     return True
 
 
@@ -86,11 +97,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DOMAIN][entry.entry_id] = {DATA_COORDINATOR: coordinator}
 
-    async def _async_fire_events() -> None:
+    @callback
+    def _fire_upcoming_events(_now: datetime | None = None) -> None:
+        """Émet l'événement de rappel des collectes entrées dans le délai."""
         if not coordinator.data:
             return
 
         now = dt_util.utcnow()
+        upcoming: set[tuple[str, str]] = set()
         for event in coordinator.data.get("events", []):
             start = event["start"]
             time_until = start - now
@@ -98,6 +112,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
             if 0 <= hours_until <= coordinator.collection_offset_hours:
                 event_key = (event["collection_id"], start.isoformat())
+                upcoming.add(event_key)
                 if event_key not in coordinator.fired_events:
                     coordinator.fired_events.add(event_key)
 
@@ -116,11 +131,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     hass.bus.async_fire(
                         f"{DOMAIN}.{EVENT_COLLECTION_UPCOMING}", payload
                     )
+        # les collectes passées n'ont plus à être retenues
+        coordinator.fired_events &= upcoming
 
+    entry.async_on_unload(coordinator.async_add_listener(_fire_upcoming_events))
+    # Les données ne sont relues qu'une fois par semaine : sans cette horloge,
+    # le rappel ne partirait qu'à ce moment-là, et non à l'approche de la collecte.
     entry.async_on_unload(
-        coordinator.async_add_listener(
-            lambda: hass.async_create_task(_async_fire_events())
-        )
+        async_track_time_interval(hass, _fire_upcoming_events, EVENT_CHECK_INTERVAL)
     )
 
     async def async_handle_refresh_service(call):

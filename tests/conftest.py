@@ -247,6 +247,20 @@ calendar_module.CalendarEntity = CalendarEntity
 calendar_module.CalendarEvent = CalendarEvent
 components.calendar = calendar_module
 
+# ----- homeassistant.helpers.event -----------------------------------------
+event_module = _ensure_module("homeassistant.helpers.event")
+
+
+def async_track_time_interval(hass, action, interval):
+    """Stub : mémorise l'horloge pour que les tests puissent la déclencher."""
+    hass.tracked_intervals = getattr(hass, "tracked_intervals", [])
+    hass.tracked_intervals.append((action, interval))
+    return lambda: None
+
+
+event_module.async_track_time_interval = async_track_time_interval
+helpers.event = event_module
+
 # ----- homeassistant.helpers.update_coordinator --------------------------
 update_coordinator = _ensure_module("homeassistant.helpers.update_coordinator")
 

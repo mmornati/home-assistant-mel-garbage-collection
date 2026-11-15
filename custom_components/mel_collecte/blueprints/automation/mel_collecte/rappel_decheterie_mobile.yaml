@@ -1,0 +1,149 @@
+blueprint:
+  name: "MEL Collecte : passage de la déchèterie mobile"
+  description: >-
+    Prévient à l'heure choisie, la veille (ou le jour même) du passage d'une
+    déchèterie mobile près de chez vous. Un filtre sur la commune et sur la
+    distance permet de ne garder que les passages qui vous intéressent.
+  domain: automation
+  author: mmornati
+  source_url: https://github.com/mmornati/home-assistant-mel-garbage-collection/blob/main/custom_components/mel_collecte/blueprints/automation/mel_collecte/rappel_decheterie_mobile.yaml
+  homeassistant:
+    min_version: 2024.6.0
+  input:
+    mobile_sensor:
+      name: Capteur « Prochaine déchèterie mobile »
+      selector:
+        entity:
+          filter:
+            - integration: mel_collecte
+              domain: sensor
+    commune:
+      name: Commune
+      description: >-
+        Ne prévenir que si le nom ou l'adresse du passage contient ce texte,
+        par exemple « Lomme ». Laisser vide pour tous les passages proches.
+      default: ""
+      selector:
+        text:
+    max_distance:
+      name: Distance maximale (km)
+      description: "0 : pas de limite."
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 30
+          step: 0.5
+          unit_of_measurement: km
+          mode: box
+    reminder_time:
+      name: Heure du rappel
+      default: "19:00:00"
+      selector:
+        time:
+    days_before:
+      name: Jours avant le passage
+      description: "1 : la veille. 0 : le jour même."
+      default: 1
+      selector:
+        number:
+          min: 0
+          max: 7
+          mode: box
+    notify_devices:
+      name: Téléphones à prévenir
+      description: Appareils de l'application mobile Home Assistant.
+      default: []
+      selector:
+        device:
+          multiple: true
+          filter:
+            - integration: mobile_app
+    title:
+      name: Titre
+      default: Déchèterie mobile
+      selector:
+        text:
+    message:
+      name: Message
+      description: >-
+        Variables disponibles : `nom`, `adresse`, `distance_km`, `debut` et
+        `fin` (heures), `quand` (« demain », « aujourd'hui »…).
+      default: "{{ nom }}, {{ quand }} de {{ debut }} à {{ fin }} : {{ adresse }}."
+      selector:
+        text:
+          multiline: true
+    extra_actions:
+      name: Actions supplémentaires
+      description: >-
+        Facultatif. Les variables du message et `title` sont disponibles.
+      default: []
+      selector:
+        action:
+
+mode: single
+max_exceeded: silent
+
+variables:
+  sensor: !input mobile_sensor
+  days_before: !input days_before
+  commune: !input commune
+  max_distance: !input max_distance
+  title: !input title
+  quand: >-
+    {% set jours = days_before | int(1) %}
+    {{ {0: "aujourd'hui", 1: "demain"}.get(jours, "dans " ~ jours ~ " jours") }}
+  # Le capteur liste les passages de chaque site proche (attribut `passages`) ;
+  # les versions jusqu'à 1.6.0 ne donnent que le tout prochain.
+  passage: >-
+    {% set cible = (now() + timedelta(days=days_before | int(1))).date() %}
+    {% set filtre = (commune or '') | trim | lower %}
+    {% set limite = max_distance | float(0) %}
+    {% set seul = {
+      'nom': state_attr(sensor, 'nom'),
+      'adresse': state_attr(sensor, 'adresse'),
+      'distance_km': state_attr(sensor, 'distance_km'),
+      'debut': state_attr(sensor, 'debut'),
+      'fin': state_attr(sensor, 'fin'),
+    } %}
+    {% set passages = state_attr(sensor, 'passages') or ([seul] if seul.debut else []) %}
+    {% set ns = namespace(choisi=none) %}
+    {% for item in passages %}
+      {% set debut = as_datetime(item.debut) if item.debut else none %}
+      {% set texte = ((item.nom or '') ~ ' ' ~ (item.adresse or '')) | lower %}
+      {% if ns.choisi is none
+         and debut is not none
+         and as_local(debut).date() == cible
+         and filtre in texte
+         and (limite == 0 or (item.distance_km is number and item.distance_km <= limite)) %}
+        {% set ns.choisi = item %}
+      {% endif %}
+    {% endfor %}
+    {{ ns.choisi }}
+
+trigger:
+  - platform: time
+    at: !input reminder_time
+
+condition:
+  - condition: template
+    value_template: "{{ passage is mapping }}"
+
+action:
+  - variables:
+      nom: "{{ passage.nom }}"
+      adresse: "{{ passage.adresse }}"
+      distance_km: "{{ passage.distance_km }}"
+      debut: "{{ as_local(as_datetime(passage.debut)).strftime('%H:%M') }}"
+      fin: "{{ as_local(as_datetime(passage.fin)).strftime('%H:%M') if passage.fin else '' }}"
+  - repeat:
+      for_each: !input notify_devices
+      sequence:
+        - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+          data:
+            title: !input title
+            message: !input message
+            data:
+              tag: mel_collecte_decheterie_mobile
+  - choose: []
+    default: !input extra_actions

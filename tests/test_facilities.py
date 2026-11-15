@@ -381,3 +381,34 @@ def test_accents_repaired():
         [_facility(1, 559, "Residence AllÃ©es du ThÃ©atre", 50.63, 3.06, "24/7")], *HOME
     )
     assert places["composter"][0]["name"] == "Residence Allées du Théatre"
+
+
+def test_mobile_visits_lists_every_site():
+    from custom_components.mel_collecte.facilities import mobile_visits
+
+    places = normalize_facilities(RAW, *HOME)["mobile"]
+    visits = mobile_visits(places, datetime(2026, 6, 1, 9, 0))
+    assert [(place["name"], start) for place, start, _ in visits] == [
+        ("Déchèterie mobile de Lesquin", datetime(2026, 6, 14, 9, 30)),
+        ("Déchèterie mobile de Lomme 2", datetime(2026, 6, 20, 14, 0)),
+    ]
+    assert mobile_visits([], datetime(2026, 6, 1)) == []
+
+
+def test_mobile_sensor_exposes_all_visits():
+    from custom_components.mel_collecte.sensor import (
+        MelCollecteMobileRecyclingCenterSensor,
+    )
+
+    sensor = MelCollecteMobileRecyclingCenterSensor(
+        _Coordinator(normalize_facilities(RAW, *HOME)), _entry()
+    )
+    with _at("sensor", datetime(2026, 6, 1, 9, 0)):
+        passages = sensor.extra_state_attributes["passages"]
+    assert [item["nom"] for item in passages] == [
+        "Déchèterie mobile de Lesquin",
+        "Déchèterie mobile de Lomme 2",
+    ]
+    assert passages[1]["debut"] == "2026-06-20T14:00:00"
+    assert passages[1]["fin"] == "2026-06-20T17:00:00"
+    assert passages[1]["adresse"] == "adresse 4"
