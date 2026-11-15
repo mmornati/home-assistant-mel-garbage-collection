@@ -34,7 +34,7 @@ Un capteur est créé pour chaque type de déchet collecté à votre adresse. Le
 |---|---|---|
 | **Déchèterie la plus proche** | Nom de la déchèterie | `adresse`, `distance_km`, `ouverte`, `horaires_du_jour`, `fermeture`, `prochaine_ouverture`, `decheteries` (les cinq plus proches) |
 | **Déchèterie ouverte** | Activé quand la déchèterie la plus proche est ouverte | `nom`, `fermeture`, `prochaine_ouverture` |
-| **Prochaine déchèterie mobile** | Date et heure du prochain passage parmi les trois plus proches | `nom`, `adresse`, `distance_km`, `debut`, `fin` |
+| **Prochaine déchèterie mobile** | Date et heure du prochain passage parmi les trois plus proches | `nom`, `adresse`, `distance_km`, `debut`, `fin`, `passages` (le prochain passage de chaque site des environs) |
 
 Les capteurs de déchèterie portent des attributs `latitude` et `longitude` : ils s'affichent donc sur la carte **Plan** de Home Assistant.
 

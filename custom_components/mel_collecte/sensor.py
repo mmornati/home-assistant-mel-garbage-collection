@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.util import dt as dt_util
 
-from .facilities import facility_status, next_mobile_visit
+from .facilities import facility_status, mobile_visits, next_mobile_visit
 from .const import (
     DATA_COORDINATOR,
     DOMAIN,
@@ -356,11 +356,13 @@ class MelCollecteMobileRecyclingCenterSensor(MelCollecteBaseSensor):
         self._attr_icon = "mdi:truck-cargo-container"
         self._attr_name = ui_text("next_mobile_recycling_center", self._language)
 
-    def _visit(self):
+    def _places(self) -> list[dict[str, Any]]:
         data = self._coordinator.data or {}
-        places = (data.get("facilities") or {}).get("mobile") or []
+        return (data.get("facilities") or {}).get("mobile") or []
+
+    def _visit(self):
         # les trois plus proches : au-delà, ce n'est plus « près de chez vous »
-        return next_mobile_visit(places[:3], dt_util.now())
+        return next_mobile_visit(self._places()[:3], dt_util.now())
 
     @property
     def native_value(self):
@@ -382,4 +384,18 @@ class MelCollecteMobileRecyclingCenterSensor(MelCollecteBaseSensor):
             "horaires": place.get("opening_hours_text"),
             "latitude": place.get("lat"),
             "longitude": place.get("lon"),
+            # tous les sites des environs : une automatisation peut ainsi ne
+            # retenir que ceux d'une commune
+            "passages": [
+                {
+                    "nom": site["name"],
+                    "adresse": site.get("address"),
+                    "distance_km": site.get("distance_km"),
+                    "debut": site_start.isoformat(),
+                    "fin": site_end.isoformat(),
+                }
+                for site, site_start, site_end in mobile_visits(
+                    self._places(), dt_util.now()
+                )
+            ],
         }

@@ -1,0 +1,127 @@
+blueprint:
+  name: "MEL Collecte : rappel pour sortir les bacs"
+  description: >-
+    Envoie une notification à l'heure choisie, la veille (ou le jour même)
+    d'une collecte, avec la liste des bacs à sortir.
+
+
+    Fonctionne avec les capteurs de l'intégration MEL Collecte. Rien n'est
+    envoyé les jours sans collecte.
+  domain: automation
+  author: mmornati
+  source_url: https://github.com/mmornati/home-assistant-mel-garbage-collection/blob/main/custom_components/mel_collecte/blueprints/automation/mel_collecte/rappel_bacs.yaml
+  homeassistant:
+    min_version: 2024.6.0
+  input:
+    collection_sensors:
+      name: Capteurs de collecte
+      description: >-
+        Les capteurs « Collecte … » des bacs à suivre (un par type de déchet),
+        ou simplement « Prochaine collecte ». Choisir un capteur par bac permet
+        d'annoncer plusieurs collectes le même jour.
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - integration: mel_collecte
+              domain: sensor
+    reminder_time:
+      name: Heure du rappel
+      default: "19:00:00"
+      selector:
+        time:
+    days_before:
+      name: Jours avant la collecte
+      description: "1 : la veille. 0 : le jour même."
+      default: 1
+      selector:
+        number:
+          min: 0
+          max: 3
+          mode: box
+    notify_devices:
+      name: Téléphones à prévenir
+      description: Appareils de l'application mobile Home Assistant.
+      default: []
+      selector:
+        device:
+          multiple: true
+          filter:
+            - integration: mobile_app
+    title:
+      name: Titre
+      default: Poubelles
+      selector:
+        text:
+    message:
+      name: Message
+      description: >-
+        Variables disponibles : `bacs` (liste en clair), `bacs_liste` (liste),
+        `quand` (« demain », « aujourd'hui »…).
+      default: "À sortir pour {{ quand }} : {{ bacs }}."
+      selector:
+        text:
+          multiline: true
+    extra_actions:
+      name: Actions supplémentaires
+      description: >-
+        Facultatif : annonce vocale, lampe, autre service de notification…
+        Les variables `title`, `bacs`, `bacs_liste` et `quand` sont disponibles.
+      default: []
+      selector:
+        action:
+
+mode: single
+max_exceeded: silent
+
+variables:
+  sensors: !input collection_sensors
+  days_before: !input days_before
+  title: !input title
+  quand: >-
+    {% set jours = days_before | int(1) %}
+    {{ {0: "aujourd'hui", 1: "demain"}.get(jours, "dans " ~ jours ~ " jours") }}
+  bacs_liste: >-
+    {% set cible = (now() + timedelta(days=days_before | int(1))).date() %}
+    {% set ns = namespace(bacs=[]) %}
+    {% for capteur in sensors %}
+      {% set debut = state_attr(capteur, 'debut')
+         or state_attr(capteur, 'prochaine_collecte')
+         or state_attr(capteur, 'next_collection_date') %}
+      {% set quand_dt = as_datetime(debut) if debut else none %}
+      {% if quand_dt is not none and as_local(quand_dt).date() == cible %}
+        {% set libelles = state_attr(capteur, 'types_friendly')
+           or state_attr(capteur, 'next_collection_type')
+           or state_attr(capteur, 'type_libelle')
+           or [] %}
+        {% set libelles = [libelles] if libelles is string else libelles %}
+        {% for libelle in libelles %}
+          {% if libelle and libelle not in ns.bacs %}
+            {% set ns.bacs = ns.bacs + [libelle] %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {{ ns.bacs }}
+  bacs: "{{ bacs_liste | join(', ') }}"
+
+trigger:
+  - platform: time
+    at: !input reminder_time
+
+condition:
+  - condition: template
+    value_template: "{{ bacs_liste | length > 0 }}"
+
+action:
+  - repeat:
+      for_each: !input notify_devices
+      sequence:
+        - service: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+          data:
+            title: !input title
+            message: !input message
+            data:
+              tag: mel_collecte_bacs
+  - choose: []
+    default: !input extra_actions

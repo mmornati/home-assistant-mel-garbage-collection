@@ -6,3 +6,5 @@ mypy
 async-timeout
 voluptuous
 
+pyyaml
+jinja2

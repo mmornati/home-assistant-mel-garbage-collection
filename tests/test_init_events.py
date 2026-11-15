@@ -52,8 +52,14 @@ async def test_async_setup_entry_registers_services_and_fires_events():
 
         hass.async_create_task = AsyncMock()
 
+        hass.tracked_intervals = []
         result = await async_setup_entry(hass, entry)
         assert result is True
+
+        # une horloge vérifie les collectes à venir chaque minute
+        ((clock, interval),) = hass.tracked_intervals
+        assert interval == timedelta(minutes=1)
+        assert clock is mock_add_listener.call_args[0][0]
 
         assert hass.services.async_register.call_count == 2
 
@@ -104,6 +110,36 @@ async def test_async_setup_entry_registers_services_and_fires_events():
             await scheduled_coro
 
         assert hass.bus.async_fire.call_count == 1
+
+        # L'horloge émet le rappel sans attendre la relecture hebdomadaire
+        coordinator.data["events"].append(
+            {
+                "collection_id": "col_2",
+                "garbage_types": ["emb"],
+                "garbage_types_friendly": ["Emballages"],
+                "start": now + timedelta(hours=30),
+                "end": now + timedelta(hours=31),
+                "name": "Collecte emballages",
+            }
+        )
+        listener()
+        assert hass.bus.async_fire.call_count == 1  # encore trop tôt
+
+        later = now + timedelta(hours=7)
+        with patch("homeassistant.util.dt.utcnow", return_value=later):
+            listener(later)
+            listener(later)
+        assert hass.bus.async_fire.call_count == 2
+        assert hass.bus.async_fire.call_args[0][1]["collection_id"] == "col_2"
+        assert hass.bus.async_fire.call_args[0][1]["hours_until"] == 23
+
+        # une collecte passée est oubliée
+        after = now + timedelta(hours=13)
+        with patch("homeassistant.util.dt.utcnow", return_value=after):
+            listener(after)
+        assert coordinator.fired_events == {
+            ("col_2", (now + timedelta(hours=30)).isoformat())
+        }
 
         unload_result = await async_unload_entry(hass, entry)
         assert unload_result is True

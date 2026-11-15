@@ -19,6 +19,7 @@
 - **Capteurs intelligents** : Capteur de prochaine collecte avec attributs détaillés, capteurs par type de déchet, et compte à rebours
 - **Système d'alertes** : Alertes en temps réel du service de collecte
 - **Bilingue** : Localisation complète en français et anglais
+- **Modèles d'automatisation (blueprints)** : rappel pour sortir les bacs et passage de la déchèterie mobile, à configurer sans YAML
 - **Automatisations par événements** : Événement natif `mel_collecte.collection_upcoming` pour des automatisations simples
 - **Cartes prêtes à l'emploi** : Quatre cartes de tableau de bord livrées avec l'intégration (prochaine collecte, calendrier, guide du tri, déchèteries)
 - **Déchèteries et points d'apport** : Les 14 déchèteries de la métropole classées par distance, ouvertes ou fermées à l'instant, les déchèteries mobiles, les bornes à verre et les composteurs de quartier
