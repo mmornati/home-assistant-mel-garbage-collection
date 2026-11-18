@@ -80,8 +80,17 @@ setup() {
   if [ "$("$0" run /usr/bin/id -u)" = "$(id -u)" ]; then
     echo "::error::The sandbox runs as the runner user"; exit 1
   fi
-  if "$0" run /usr/bin/python3 -c 'import socket; socket.create_connection(("1.1.1.1", 443), 5)' 2> /dev/null; then
-    echo "::error::The sandbox has network access"; exit 1
+  # Fail closed: only an explicit "blocked" answer counts, not a missing Python.
+  local net
+  net=$("$0" run python3 -c '
+import socket
+try:
+    socket.create_connection(("1.1.1.1", 443), 5)
+    print("open")
+except OSError:
+    print("blocked")' 2> /dev/null || true)
+  if [ "$net" != blocked ]; then
+    echo "::error::The sandbox network check did not report blocked (${net:-no answer})"; exit 1
   fi
   if "$0" run /usr/bin/touch "$workspace/.sandbox-write-test" 2> /dev/null; then
     rm -f "$workspace/.sandbox-write-test"
