@@ -46,6 +46,29 @@ setup() {
   done
   sudo -n setfacl -R -m "u:${SANDBOX_USER}:rX" "$workspace"
   sudo -n find "$workspace" -type d -exec setfacl -d -m "u:${SANDBOX_USER}:rX" {} +
+  # Traversing the runner's home must not open its other files (runner config,
+  # _actions, _diag, dotfiles): every sibling along the path from $HOME down to
+  # the workspace gets an explicit no-access entry, except the Python install
+  # the sandbox runs (setup-python or a venv may live under the home).
+  local python_dirs keep sibling
+  python_dirs=$(python3 -c 'import sys; print(sys.prefix); print(sys.base_prefix)')
+  if [ -n "${HOME:-}" ] && [ "$HOME" != / ]; then
+    dir=$(dirname "$workspace")
+    while [ "${dir#"$HOME"}" != "$dir" ] || [ "$dir" = "$HOME" ]; do
+      for sibling in "$dir"/* "$dir"/.[!.]* "$dir"/..?*; do
+        [ -e "$sibling" ] || continue
+        case "$workspace/" in "$sibling"/*) continue ;; esac
+        keep=no
+        while IFS= read -r p; do
+          case "$p/" in "$sibling"/*) keep=yes ;; esac
+        done <<< "$python_dirs"
+        [ "$keep" = yes ] && continue
+        sudo -n setfacl -m "u:${SANDBOX_USER}:---" "$sibling"
+      done
+      [ "$dir" = "$HOME" ] && break
+      dir=$(dirname "$dir")
+    done
+  fi
   # The runner's temp dir sits next to the workspace and holds the step
   # scripts, $GITHUB_OUTPUT/$GITHUB_ENV and the artifacts: a named ACL entry
   # with no permissions overrides the "other" bits for the sandbox user.
@@ -67,6 +90,14 @@ setup() {
   if "$0" run /usr/bin/cat "/proc/$$/environ" > /dev/null 2>&1; then
     echo "::error::The sandbox can read the runner's process environment"; exit 1
   fi
+  if [ -n "${HOME:-}" ] && "$0" run /usr/bin/ls -A "$HOME" > /dev/null 2>&1; then
+    echo "::error::The sandbox can list the runner's home directory"; exit 1
+  fi
+  for f in "${HOME:-/nonexistent}"/.gitconfig "${HOME:-/nonexistent}"/runners "${HOME:-/nonexistent}"/actions-runner; do
+    if [ -e "$f" ] && "$0" run /usr/bin/test -r "$f" 2> /dev/null; then
+      echo "::error::The sandbox can read ${f}"; exit 1
+    fi
+  done
   for file in "${GITHUB_OUTPUT:-}" "${GITHUB_ENV:-}" "${GITHUB_PATH:-}" "${GITHUB_STEP_SUMMARY:-}"; do
     if [ -n "$file" ] && "$0" run /usr/bin/test -e "$file" 2> /dev/null; then
       echo "::error::The sandbox can reach ${file}"; exit 1
